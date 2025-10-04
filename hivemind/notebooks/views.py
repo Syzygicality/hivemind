@@ -39,6 +39,21 @@ class NotebookDetailView(generics.RetrieveUpdateDestroyAPIView):
             Notebook.objects.filter(user_ids=user)
         ).distinct().order_by('-updated_at')
 
+    def perform_update(self, serializer):
+        serializer.save()
+        notebook = serializer.instance
+        data = self.request.data
+
+        add_users = data.get('add_user_ids', [])
+        remove_users = data.get('remove_user_ids', [])
+
+        if add_users:
+            notebook.user_ids.add(*User.objects.filter(id__in=add_users))
+        if remove_users:
+            notebook.user_ids.remove(*User.objects.filter(id__in=remove_users))
+        
+        return notebook
+
 class PageListCreateView(generics.ListCreateAPIView):
     queryset = Page.objects.all()
     serializer_class = PageSerializer
@@ -81,3 +96,4 @@ class VersionSingleView(generics.RetrieveAPIView):
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
     lookup_field = 'version_id'
+
