@@ -1,27 +1,39 @@
-from rest_framework import viewsets
+from rest_framework import generics
 from .models import User, Notebook, Page, Version
 from .serializers import UserSerializer, NotebookSerializer, PageSerializer, VersionSerializer
+from rest_framework import permissions
 
 # Create your views here.
-class UserViewSet(viewsets.ModelViewSet):
+class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'id'
 
-class NotebookViewSet(viewsets.ModelViewSet):
-    queryset = Notebook.objects.all()
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'id'
+
+class NotebookListCreateView(generics.ListCreateAPIView):
     serializer_class = NotebookSerializer
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'notebook_id'
-    filterset_fields = ['admin_id__id', 'user_ids__id']
 
-class PageViewSet(viewsets.ModelViewSet):
-    queryset = Page.objects.all()
-    serializer_class = PageSerializer
-    lookup_field = 'page_id'
-    filterset_fields = ['notebook__notebook_id']
+    def get_queryset(self):
+        user = self.request.user
+        return (
+            Notebook.objects.filter(admin_id=user) |
+            Notebook.objects.filter(user_ids=user)
+        ).distinct().order_by('-updated_at')
 
-class VersionViewSet(viewsets.ModelViewSet):
-    queryset = Version.objects.all()
-    serializer_class = VersionSerializer
-    lookup_field = 'version_id'
-    filterset_fields = ['user_id__id', 'previous_version__version_id']
+class NotebookDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = NotebookSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'notebook_id'
+
+    def get_queryset(self):
+        user = self.request.user
+        return (
+            Notebook.objects.filter(admin_id=user) |
+            Notebook.objects.filter(user_ids=user)
+        ).distinct().order_by('-updated_at')
