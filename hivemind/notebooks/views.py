@@ -1,6 +1,6 @@
-from rest_framework import generics
-from .models import User, Notebook, Page, Version
-from .serializers import UserSerializer, NotebookSerializer, PageSerializer, VersionSerializer
+from rest_framework import generics, serializers
+from .models import User, Notebook, Page, Version, Draft, Post, Vote
+from .serializers import UserSerializer, NotebookSerializer, PageSerializer, VersionSerializer, DraftSerializer, PostSerializer
 from rest_framework import permissions
 from django.db import transaction
 
@@ -8,11 +8,13 @@ from django.db import transaction
 class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'id'
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'id'
 
 class NotebookListCreateView(generics.ListCreateAPIView):
@@ -78,10 +80,12 @@ class PageListCreateView(generics.ListCreateAPIView):
 class PageDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Page.objects.all()
     serializer_class = PageSerializer
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'page_id'
 
 class VersionListView(generics.ListAPIView):
     serializer_class = VersionSerializer
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'version_id'
 
     def get_queryset(self):
@@ -97,3 +101,70 @@ class VersionSingleView(generics.RetrieveAPIView):
     serializer_class = VersionSerializer
     lookup_field = 'version_id'
 
+class DraftListCreateView(generics.ListCreateAPIView):
+    serializer_class = DraftSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'draft_id'
+    
+    def get_queryset(self):
+        return Draft.objects.filter(user_id=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(
+            user_id=self.request.user,
+            page_id_id=self.request.data.get('page_id'),
+            content=""
+        )
+
+class DraftDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = DraftSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'draft_id'
+    
+    def get_queryset(self):
+        return Draft.objects.filter(user_id=self.request.user)
+
+class PostListCreateView(generics.ListCreateAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Post.objects.filter(user_id=self.request.user)
+    
+    def perform_create(self, serializer):
+        draft_id = self.request.data.get('draft_id')
+
+        draft = self.get_queryset().filter(draft_id=draft_id).first()
+        if not draft:
+            raise serializers.ValidationError("Draft not found or not owned by you.")
+
+        serializer.save(
+            user_id=self.request.user,
+            page_id=draft.page_id,
+            draft_id=draft,
+            votes=0
+        )
+
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'post_id'
+
+    def get_queryset(self):
+        return Post.objects.all()
+
+    def perform_destroy(self, instance):
+        if instance.user_id != self.request.user:
+            raise PermissionError("You can only delete your own posts.")
+        instance.delete()
+
+class PostVoteView(generics.UpdateAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'post_id'
+
+    def get_queryset(self):
+        return Post.objects.all()
+    
+    def perform_update(self, serializer):
+        pass
