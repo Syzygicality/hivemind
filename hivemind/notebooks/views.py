@@ -1,4 +1,4 @@
-from rest_framework import generics, serializers
+from rest_framework import generics, serializers, filters
 from .models import User, Notebook, Page, Version, Draft, Post, Vote
 from .serializers import UserSerializer, NotebookSerializer, PageSerializer, VersionSerializer, DraftSerializer, PostSerializer
 from rest_framework import permissions
@@ -9,6 +9,8 @@ class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username']
     lookup_field = 'id'
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -166,5 +168,63 @@ class PostVoteView(generics.UpdateAPIView):
     def get_queryset(self):
         return Post.objects.all()
     
-    def perform_update(self, serializer):
-        pass
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        post = self.get_object()
+        user = request.user
+        action = request.data.get('action')
+        
+        existing_vote = Vote.objects.filter(post_id=post, user_id=user).first()
+        
+        if action == "remove":
+            if existing_vote:
+                if existing_vote.agree:
+                    post.votes -= 1
+                else:
+                    post.votes += 1
+                existing_vote.delete()
+        
+        elif action in ["like", "dislike"]:
+            agree = action == "like"
+            if existing_vote:
+                # adjust votes if user flips vote
+                if existing_vote.agree != agree:
+                    post.votes += 1 if agree else -1
+                    existing_vote.agree = agree
+                    existing_vote.save()
+            else:
+                # new vote
+                Vote.objects.create(user_id=user, post_id=post, agree=agree)
+                post.votes += 1 if agree else -1
+
+        post.save()
+
+        # 3️⃣ Check thresholds from notebook settings
+        page = post.page_id
+        notebook = page.notebook_id
+
+        # Merge threshold
+        if post.votes >= notebook.merge_threshold:
+            # Promote post content into new Version
+            Version.objects.create(
+                user_id=post.user_id,
+                page_id=page,
+                previous_version=page.latest_version,
+                content=post.draft_id.content
+            )
+            # Update page latest_version
+            page.latest_version = Version.objects.filter(page_id=page).latest('created_at')
+            page.save()
+            # Cleanup post and draft
+            post.draft_id.delete()
+            post.delete()
+            return Response({"merged": True, "message": "Post merged into new version."})
+
+        # Toss threshold (negative votes)
+        if post.votes <= notebook.toss_threshold:
+            post.delete()
+            return Response({"tossed": True, "message": "Post discarded due to low votes."})
+
+        # Default: return updated post data
+        serializer = PostSerializer(post, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

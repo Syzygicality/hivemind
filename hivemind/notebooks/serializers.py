@@ -40,7 +40,6 @@ class DraftSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     user_id = UserSerializer(read_only=True)
     page_id = PageSerializer(read_only=True)
-    draft_id = DraftSerializer(read_only=True)
 
     class Meta:
         model = Post
