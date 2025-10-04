@@ -1,10 +1,34 @@
 #root {
   width: 100%;
-  max-width: none;
-  /* allow full-width layout */
+  /* ensure the root never exceeds the viewport width */
+  max-width: 100vw;
+  /* prevent horizontal overflow inside the app container */
+  overflow-x: hidden;
   margin: 0;
-  padding: 2rem;
+  padding: 2rem 1rem;
   text-align: center;
+}
+
+/* Ensure media don't overflow horizontally */
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* prevent horizontal overflow from width + padding and make sizing predictable */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* protect against accidental horizontal scroll while still allowing vertical scroll */
+html,
+body {
+  overflow-x: hidden;
 }
 
 :root {
@@ -163,6 +187,8 @@ body,
 .panel-wrap {
   width: 100%;
   max-width: 960px;
+  /* don't allow panel to exceed viewport width */
+  max-width: min(960px, 100vw);
   padding: 28px 28px 48px;
   margin: 0 auto;
   /* ensure panel is centered */
@@ -175,9 +201,9 @@ body,
   width: 100%;
   text-align: center;
   padding: 36px 12px;
-  background: #f3f4f6;
-  /* consistent light grey */
-  border-bottom: 1px solid rgba(16, 22, 26, 0.06);
+  background: linear-gradient(180deg, #fff9e6, #fffcf0);
+  /* soft yellow gradient */
+  border-bottom: 1px solid rgba(255, 122, 0, 0.12);
 }
 
 .site-title {

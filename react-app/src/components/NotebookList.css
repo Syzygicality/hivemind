@@ -9,8 +9,7 @@
     display: grid;
     /* auto-fit creates as many columns as can fit, auto-fill would create empty columns */
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px 24px;
-    row-gap: 40px;
+    gap: 54px 24px;
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
