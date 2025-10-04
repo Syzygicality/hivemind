@@ -59,6 +59,7 @@ class Post(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='poster')
     page_id = models.ForeignKey(Page, on_delete=models.CASCADE, null=True, related_name='page_to_update')
     draft_id = models.ForeignKey(Draft, on_delete=models.CASCADE, null=True, related_name='draft')
+    content = models.TextField()
     votes = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
