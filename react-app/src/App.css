@@ -7,13 +7,29 @@
   text-align: center;
 }
 
+:root {
+  /* color scheme: white / orange / yellow */
+  --bg: #fffaf0;
+  /* very light warm background */
+  --card-bg: #ffffff;
+  --accent: #ff7a00;
+  /* orange primary */
+  --accent-2: #ffd54d;
+  /* warm yellow */
+  --text: #3a2d20;
+  /* deep brown for contrast */
+  --muted: #8a6b49;
+  /* muted warm */
+  --border: rgba(255, 122, 0, 0.08);
+}
+
 /* Ensure the whole page uses a consistent light-grey background */
 html,
 body,
 #root {
   height: 100%;
-  background: #f3f4f6;
-  color: #0f1720;
+  background: var(--bg);
+  color: var(--text);
   margin: 0;
 }
 
@@ -83,18 +99,29 @@ body,
 }
 
 .header-actions .btn {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #d0d7de;
-  background: #ffffff;
-  color: #0f1720;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--card-bg);
+  color: var(--text);
   cursor: pointer;
+  box-shadow: 0 6px 18px rgba(58, 45, 32, 0.04);
+}
+
+.header-actions .btn:hover {
+  transform: translateY(-2px);
 }
 
 .header-actions .btn.primary {
-  background: #2ea44f;
+  background: linear-gradient(90deg, var(--accent), #ff8f2b);
   color: #fff;
-  border: none;
+  border: 0;
+}
+
+.header-actions .btn.secondary {
+  background: var(--accent-2);
+  color: var(--text);
+  border: 0;
 }
 
 .home-root {
@@ -115,9 +142,10 @@ body,
   justify-content: space-between;
   padding: 12px 24px;
   position: sticky;
-  top: 0;
-  z-index: 20;
   background: transparent;
+  /* remove darker banner */
+  /* match page background */
+  border-bottom: none;
 }
 
 .home-main {
@@ -156,21 +184,21 @@ body,
   margin: 0;
   font-size: 2.8rem;
   font-weight: 700;
-  color: #0f1720;
+  color: var(--text);
   /* dark text */
   letter-spacing: -0.5px;
 }
 
-/* slim action bar below the title, matching the same light grey */
+/* slim action bar below the title (transparent) */
 .site-header {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 24px 18px;
-  background: #f3f4f6;
-  /* match page background */
-  border-bottom: 1px solid rgba(16, 22, 26, 0.04);
+  padding: 12px 24px 8px;
+  background: transparent;
+  /* no banner behind buttons */
+  border-bottom: none;
 }
 
 .site-header .header-actions {
@@ -179,5 +207,6 @@ body,
   top: auto;
   display: flex;
   gap: 10px;
-  margin-top: 8px;
+  /* push the action buttons slightly lower so they're closer to the notebook grid */
+  margin-top: 22px;
 }

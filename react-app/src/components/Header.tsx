@@ -7,7 +7,6 @@ export default function Header() {
 
       <header className="site-header">
         <div className="header-actions">
-          <button className="btn">Add Notebook</button>
           <button className="btn primary">Create Notebook</button>
         </div>
       </header>

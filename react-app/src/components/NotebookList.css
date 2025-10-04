@@ -7,52 +7,123 @@
     margin: 0;
     padding: 0;
     display: grid;
-    /* fixed grid with max 4 columns; items flow row by row */
-    grid-template-columns: repeat(4, minmax(220px, 1fr));
+    /* auto-fit creates as many columns as can fit, auto-fill would create empty columns */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 24px;
     width: 100%;
     max-width: 1200px;
-    /* keeps grid centered */
     margin: 0 auto;
-    /* center the grid container */
-    justify-items: center;
-    /* center each grid item */
 }
 
 .notebook-item {
-    background: #ffffff;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 18px;
-    box-shadow: 0 8px 24px rgba(16, 22, 26, 0.06);
+    box-shadow: 0 8px 24px rgba(58, 45, 32, 0.06);
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    /* ensures all items have the same height */
     min-height: 100px;
-    color: #0f1720;
-    border: 1px solid rgba(16, 22, 26, 0.06);
+    height: 100%;
+    color: var(--text);
+    border: 1px solid var(--border);
 }
 
 .notebook-item .content {
-    text-align: center;
+    text-align: left;
+}
+
+.notebook-item .card-top {
+    padding-bottom: 6px;
+}
+
+.notebook-item .nb-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.notebook-item .nb-meta {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    /* align text baselines so bottoms match */
+    color: var(--muted);
+}
+
+.notebook-item .nb-admin {
+    font-size: 0.95rem;
+    /* slightly smaller than title */
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    /* ensure consistent baseline */
+}
+
+.notebook-item .nb-pages {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1;
+    /* ensure consistent baseline */
+    margin-top: 2px;
+    /* small nudge to match visual baseline */
+}
+
+.notebook-item .card-bottom {
+    padding-top: 8px;
+    border-top: 1px dashed rgba(0, 0, 0, 0.03);
+}
+
+.notebook-item .nb-dates {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.notebook-item .nb-dates span {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.notebook-item .nb-date {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.notebook-item .nb-time {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.notebook-item .nb-rel {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .notebook-item:hover {
     transform: translateY(-6px);
     transition: transform 160ms ease, box-shadow 160ms ease;
-    box-shadow: 0 12px 30px rgba(16, 22, 26, 0.08);
+    box-shadow: 0 18px 40px rgba(255, 122, 0, 0.12);
 }
 
-/* Responsive breakpoints: reduce number of columns on smaller screens */
+/* Responsive breakpoints remain for better control on smaller screens */
 @media (max-width: 1100px) {
     .notebook-list {
-        grid-template-columns: repeat(3, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         max-width: 680px;
     }
 }
 
 @media (max-width: 800px) {
     .notebook-list {
-        grid-template-columns: repeat(2, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         max-width: 420px;
     }
 }
