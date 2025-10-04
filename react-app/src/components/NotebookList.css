@@ -1,0 +1,65 @@
+.notebook-list-simple {
+    padding: 12px 0;
+}
+
+.notebook-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    /* fixed grid with max 4 columns; items flow row by row */
+    grid-template-columns: repeat(4, minmax(220px, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 1200px;
+    /* keeps grid centered */
+    margin: 0 auto;
+    /* center the grid container */
+    justify-items: center;
+    /* center each grid item */
+}
+
+.notebook-item {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 8px 24px rgba(16, 22, 26, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    color: #0f1720;
+    border: 1px solid rgba(16, 22, 26, 0.06);
+}
+
+.notebook-item .content {
+    text-align: center;
+}
+
+.notebook-item:hover {
+    transform: translateY(-6px);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+    box-shadow: 0 12px 30px rgba(16, 22, 26, 0.08);
+}
+
+/* Responsive breakpoints: reduce number of columns on smaller screens */
+@media (max-width: 1100px) {
+    .notebook-list {
+        grid-template-columns: repeat(3, minmax(160px, 1fr));
+        max-width: 680px;
+    }
+}
+
+@media (max-width: 800px) {
+    .notebook-list {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+        max-width: 420px;
+    }
+}
+
+@media (max-width: 420px) {
+    .notebook-list {
+        grid-template-columns: 1fr;
+        max-width: 320px;
+    }
+}

@@ -1,19 +1,54 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  /* allow full-width layout */
+  margin: 0;
   padding: 2rem;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+/* Ensure the whole page uses a consistent light-grey background */
+html,
+body,
+#root {
+  height: 100%;
+  background: #f3f4f6;
+  color: #0f1720;
+  margin: 0;
 }
+
+
+/* site header: centered title and actions on the right */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* centers title */
+  padding: 12px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: transparent;
+  backdrop-filter: blur(6px);
+}
+
+.site-header .header-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.site-header .header-actions {
+  position: absolute;
+  right: 24px;
+  top: 12px;
+}
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -22,6 +57,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -39,4 +75,109 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.header-actions .btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #d0d7de;
+  background: #ffffff;
+  color: #0f1720;
+  cursor: pointer;
+}
+
+.header-actions .btn.primary {
+  background: #2ea44f;
+  color: #fff;
+  border: none;
+}
+
+.home-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  /* page background is set globally */
+  color: inherit;
+  align-items: center;
+  /* center children horizontally */
+}
+
+.home-header {
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: transparent;
+}
+
+.home-main {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  /* keep content from vertically centering */
+  /* content starts below header */
+  justify-content: center;
+  /* center horizontally */
+  padding-top: 32px;
+  width: 100%;
+}
+
+.panel-wrap {
+  width: 100%;
+  max-width: 960px;
+  padding: 28px 28px 48px;
+  margin: 0 auto;
+  /* ensure panel is centered */
+  display: flex;
+  justify-content: center;
+}
+
+/* Large separate title bar at the top center */
+.site-title-bar {
+  width: 100%;
+  text-align: center;
+  padding: 36px 12px;
+  background: #f3f4f6;
+  /* consistent light grey */
+  border-bottom: 1px solid rgba(16, 22, 26, 0.06);
+}
+
+.site-title {
+  margin: 0;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #0f1720;
+  /* dark text */
+  letter-spacing: -0.5px;
+}
+
+/* slim action bar below the title, matching the same light grey */
+.site-header {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 24px 18px;
+  background: #f3f4f6;
+  /* match page background */
+  border-bottom: 1px solid rgba(16, 22, 26, 0.04);
+}
+
+.site-header .header-actions {
+  position: relative;
+  right: auto;
+  top: auto;
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
 }
