@@ -64,3 +64,20 @@ class PageDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Page.objects.all()
     serializer_class = PageSerializer
     lookup_field = 'page_id'
+
+class VersionListView(generics.ListAPIView):
+    serializer_class = VersionSerializer
+    lookup_field = 'version_id'
+
+    def get_queryset(self):
+        page_id = self.kwargs.get('page_id')
+        if not page_id:
+            return Version.objects.none()
+
+        versions = Version.objects.filter(page_id=page_id).order_by('created_at')
+        return versions
+
+class VersionSingleView(generics.RetrieveAPIView):
+    queryset = Version.objects.all()
+    serializer_class = VersionSerializer
+    lookup_field = 'version_id'

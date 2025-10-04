@@ -1,4 +1,4 @@
-from .views import UserListCreateView, UserDetailView, NotebookListCreateView, NotebookDetailView, PageListCreateView, PageDetailView
+from .views import UserListCreateView, UserDetailView, NotebookListCreateView, NotebookDetailView, PageListCreateView, PageDetailView, VersionListView, VersionSingleView
 from django.urls import path
 
 urlpatterns = [
@@ -8,4 +8,6 @@ urlpatterns = [
     path('notebooks/<uuid:notebook_id>/', NotebookDetailView.as_view(), name='notebook-detail'),
     path('pages/', PageListCreateView.as_view(), name='page-list-create'),
     path('pages/<uuid:page_id>', PageDetailView.as_view(), name='page-detail'),
+    path('pages/<uuid:page_id>/versions/', VersionListView.as_view(), name='version-list'),
+    path('versions/<uuid:version_id>/', VersionSingleView.as_view(), name='version-single')
 ]
