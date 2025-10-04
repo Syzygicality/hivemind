@@ -13,6 +13,8 @@ class Notebook(models.Model):
     admin_id = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='notebooks')
     title = models.CharField(max_length=255)
     user_ids = models.ManyToManyField(User, related_name='user_notebooks', blank=True)
+    merge_threshold = models.IntegerField(null=True)
+    toss_threshold = models.IntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
