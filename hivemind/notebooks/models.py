@@ -23,7 +23,7 @@ class Version(models.Model):
     version_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='versions')
     page_id = models.ForeignKey('Page', on_delete=models.CASCADE, null=True, related_name='page')
-    previous_version = models.ForeignKey('self', on_delete=models.CASCADE, null=True, related_name='next_versions')
+    previous_version = models.ForeignKey('self', on_delete=models.CASCADE, null=True, related_name='prev_version')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -41,3 +41,34 @@ class Page(models.Model):
     def __str__(self):
         return self.title
 
+class Draft(models.Model):
+    draft_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='creator')
+    page_id = models.ForeignKey(Page, on_delete=models.CASCADE, null=True, related_name='origin')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Draft {self.draft_id} by {self.user_id}"
+
+class Post(models.Model):
+    post_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='poster')
+    page_id = models.ForeignKey(Page, on_delete=models.CASCADE, null=True, related_name='page_to_update')
+    draft_id = models.ForeignKey(Draft, on_delete=models.CASCADE, null=True, related_name='draft')
+    votes = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Post {self.post_id} by {self.user_id}"
+    
+class Vote(models.Model):
+    vote_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='user')
+    post_id = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, related_name='post')
+    agree = models.BooleanField()
+
+    def __str__(self):
+        return f"{self.agree}"
