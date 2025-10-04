@@ -12,7 +12,7 @@ class NotebookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notebook
-        fields = ['notebook_id', 'admin_id', 'title', 'user_ids', 'created_at', 'updated_at']
+        fields = ['notebook_id', 'admin_id', 'title', 'user_ids', 'merge_threshold', 'created_at', 'updated_at']
     
 class VersionSerializer(serializers.ModelSerializer):
     user_id = UserSerializer(read_only=True)

@@ -24,19 +24,22 @@ class NotebookListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'notebook_id'
 
-    def get_queryset(self, request, *args, **kwargs):
+    def get_queryset(self):
         user = self.request.user
         return (
             Notebook.objects.filter(admin_id=user) |
             Notebook.objects.filter(user_ids=user)
         ).distinct().order_by('-updated_at')
+    
+    def perform_create(self, serializer):
+        serializer.save(admin_id=self.request.user)
 
 class NotebookDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotebookSerializer
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'notebook_id'
 
-    def get_queryset(self, request, *args, **kwargs):
+    def get_queryset(self):
         user = self.request.user
         return (
             Notebook.objects.filter(admin_id=user) |
