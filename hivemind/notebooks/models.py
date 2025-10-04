@@ -71,7 +71,3 @@ class Vote(models.Model):
     vote_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='user')
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, related_name='post')
-    agree = models.BooleanField()
-
-    def __str__(self):
-        return f"{self.agree}"
