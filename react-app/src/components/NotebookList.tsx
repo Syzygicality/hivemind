@@ -3,7 +3,7 @@ import './NotebookList.css'
 import mockNotebooks from '../data/mockNotebooks'
 import NotebookItem from './NotebookItem'
 
-const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((props, ref) => {
+const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) => {
   const [notebooks, setNotebooks] = useState(mockNotebooks)
   const [showNewNotebookInput, setShowNewNotebookInput] = useState(false)
   const [newNotebookName, setNewNotebookName] = useState('')
@@ -70,7 +70,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((props, re
       const newNotebook = {
         notebook_id: `nb-${Date.now()}`,
         title: newNotebookName.trim(),
-        admin: { id: 'u-current', username: 'current_user' },
+        admin: { id: 'u-current', username: 'current_user', email: 'current@example.com' },
         user_ids: [{ id: 'u-current', username: 'current_user' }],
         isPrivate,
         contributors: isPrivate ? [] : selectedContributors,
