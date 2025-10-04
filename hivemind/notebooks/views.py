@@ -170,61 +170,36 @@ class PostVoteView(generics.UpdateAPIView):
     
     @transaction.atomic
     def update(self, request, *args, **kwargs):
-        post = self.get_object()
         user = request.user
-        action = request.data.get('action')
-        
+        post = self.get_object() 
+
         existing_vote = Vote.objects.filter(post_id=post, user_id=user).first()
-        
-        if action == "remove":
-            if existing_vote:
-                if existing_vote.agree:
-                    post.votes -= 1
-                else:
-                    post.votes += 1
-                existing_vote.delete()
-        
-        elif action in ["like", "dislike"]:
-            agree = action == "like"
-            if existing_vote:
-                # adjust votes if user flips vote
-                if existing_vote.agree != agree:
-                    post.votes += 1 if agree else -1
-                    existing_vote.agree = agree
-                    existing_vote.save()
-            else:
-                # new vote
-                Vote.objects.create(user_id=user, post_id=post, agree=agree)
-                post.votes += 1 if agree else -1
+
+        if existing_vote:
+            post.votes = F('votes') - 1
+            existing_vote.delete()
+        else:
+            post.votes = F('votes') + 1
+            Vote.objects.create(post_id=post, user_id=user)
 
         post.save()
+        post.refresh_from_db()
 
-        # 3️⃣ Check thresholds from notebook settings
         page = post.page_id
         notebook = page.notebook_id
 
-        # Merge threshold
         if post.votes >= notebook.merge_threshold:
-            # Promote post content into new Version
-            Version.objects.create(
+            new_version = Version.objects.create(
                 user_id=post.user_id,
                 page_id=page,
                 previous_version=page.latest_version,
                 content=post.draft_id.content
             )
-            # Update page latest_version
-            page.latest_version = Version.objects.filter(page_id=page).latest('created_at')
+            page.latest_version = new_version
             page.save()
-            # Cleanup post and draft
+
             post.draft_id.delete()
             post.delete()
-            return Response({"merged": True, "message": "Post merged into new version."})
+            return Response({"merged": True, "message": "Post merged into new version."}, status=status.HTTP_200_OK)
 
-        # Toss threshold (negative votes)
-        if post.votes <= notebook.toss_threshold:
-            post.delete()
-            return Response({"tossed": True, "message": "Post discarded due to low votes."})
-
-        # Default: return updated post data
-        serializer = PostSerializer(post, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"votes": post.votes}, status=status.HTTP_200_OK)
