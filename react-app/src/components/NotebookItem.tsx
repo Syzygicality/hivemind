@@ -5,6 +5,8 @@ type Notebook = {
   pages?: Array<{ page_id: string; title: string }>
   created_at?: string
   updated_at?: string
+  isPrivate?: boolean
+  contributors?: string[]
 }
 
 export default function NotebookItem({ notebook }: { notebook: Notebook }) {
@@ -47,13 +49,25 @@ export default function NotebookItem({ notebook }: { notebook: Notebook }) {
   const updated = formatParts(notebook.updated_at)
 
   return (
-    <div className="notebook-item">
+    <div className={`notebook-item ${notebook.isPrivate ? 'clickable' : ''}`}>
       <div className="content card-top">
         <div className="nb-title">{notebook.title}</div>
         <div className="nb-meta">
           <span className="nb-admin">{notebook.admin?.username || 'Unknown'}</span>
           <span className="nb-pages">{notebook.pages?.length || 0} page(s)</span>
         </div>
+        <div className="nb-privacy">
+          {notebook.isPrivate ? 'Private' : 'Collaborative'}
+        </div>
+        {!notebook.isPrivate && notebook.contributors && notebook.contributors.length > 0 && (
+          <div className="nb-contributors">
+            {notebook.contributors.length <= 2 ? (
+              notebook.contributors.join(', ')
+            ) : (
+              `${notebook.contributors.slice(0, 2).join(', ')} +${notebook.contributors.length - 2}`
+            )}
+          </div>
+        )}
       </div>
 
       <div className="content card-bottom">

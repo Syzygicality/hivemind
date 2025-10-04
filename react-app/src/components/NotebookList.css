@@ -9,7 +9,8 @@
     display: grid;
     /* auto-fit creates as many columns as can fit, auto-fill would create empty columns */
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px;
+    gap: 24px 24px;
+    row-gap: 40px;
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
@@ -133,4 +134,307 @@
         grid-template-columns: 1fr;
         max-width: 320px;
     }
+}
+
+/* Privacy and Contributors Styling */
+.nb-privacy {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+}
+
+.nb-contributors {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 400;
+    margin-top: 4px;
+    line-height: 1.3;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* New Notebook Modal Styles */
+.new-notebook-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.new-notebook-content {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    min-width: 400px;
+    max-width: 600px;
+}
+
+.new-notebook-content h3 {
+    margin: 0 0 16px 0;
+    color: #0f1720;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.new-notebook-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+    background: white;
+    color: black;
+}
+
+.new-notebook-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.new-notebook-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn-cancel, .btn-create {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.btn-cancel:hover {
+    background: #e2e8f0;
+}
+
+.btn-create {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-create:hover {
+    background: #2563eb;
+}
+
+/* Privacy Options Styles */
+.privacy-options {
+    margin: 20px 0;
+}
+
+.privacy-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.privacy-option:hover {
+    border-color: #3b82f6;
+    background: #f8fafc;
+}
+
+.privacy-option input[type="radio"] {
+    margin-right: 12px;
+    margin-top: 2px;
+}
+
+.privacy-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.privacy-label strong {
+    color: #0f1720;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.privacy-label small {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.privacy-option input[type="radio"]:checked + .privacy-label {
+    color: #3b82f6;
+}
+
+.privacy-option:has(input[type="radio"]:checked) {
+    border-color: #3b82f6;
+    background: #f1f5f9;
+}
+
+/* Contributors Step Styles */
+.contributor-search {
+    margin: 20px 0;
+}
+
+.contributor-search-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+    background: white;
+    color: black;
+}
+
+.contributor-search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.contributor-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin: 16px 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.contributor-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.contributor-option:last-child {
+    border-bottom: none;
+}
+
+.contributor-option:hover {
+    background: #f1f5f9;
+}
+
+.contributor-option input[type="checkbox"] {
+    margin-right: 12px;
+}
+
+.contributor-name {
+    font-size: 14px;
+    color: #0f1720;
+}
+
+.selected-contributors {
+    margin: 16px 0;
+    padding: 12px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #0f1720;
+}
+
+/* Notebook Page Styles */
+.notebook-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.notebook-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
+}
+
+.back-button {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 16px;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.back-button:hover {
+    background: #e2e8f0;
+    color: #0f1720;
+}
+
+.notebook-title {
+    margin: 0;
+    color: #0f1720;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.notebook-editor {
+    width: 100%;
+}
+
+.notebook-textarea {
+    width: 100%;
+    min-height: 500px;
+    padding: 30px;
+    border: none;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    font-size: 16px;
+    line-height: 1.6;
+    color: #0f1720;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.notebook-textarea::placeholder {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.notebook-textarea:focus {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+/* Clickable notebook styling */
+.notebook-item.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notebook-item.clickable:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 40px rgba(16, 22, 26, 0.12);
 }
