@@ -22,6 +22,7 @@ class Notebook(models.Model):
 class Version(models.Model):
     version_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='versions')
+    page_id = models.ForeignKey('Page', on_delete=models.CASCADE, null=True, related_name='page')
     previous_version = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='next_versions')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -31,7 +32,7 @@ class Version(models.Model):
 
 class Page(models.Model):
     page_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    notebook = models.ForeignKey(Notebook, on_delete=models.CASCADE, related_name='pages')
+    notebook_id = models.ForeignKey(Notebook, on_delete=models.CASCADE, related_name='pages')
     title = models.CharField(max_length=255)
     latest_version = models.ForeignKey(Version, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

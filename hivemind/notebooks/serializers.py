@@ -19,7 +19,7 @@ class VersionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Version
-        fields = ['version_id', 'user_id', 'previous_version', 'content', 'created_at']
+        fields = ['version_id', 'user_id', 'page_id', 'previous_version', 'content', 'created_at']
 
 class PageSerializer(serializers.ModelSerializer):
     notebook = NotebookSerializer(read_only=True)
@@ -27,4 +27,4 @@ class PageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Page
-        fields = ['page_id', 'notebook', 'title', 'latest_version', 'created_at', 'updated_at']
+        fields = ['page_id', 'notebook_id', 'title', 'latest_version', 'created_at', 'updated_at']
