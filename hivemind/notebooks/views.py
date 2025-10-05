@@ -1,4 +1,4 @@
-from rest_framework import generics, filters, status, permissions
+from rest_framework import generics, filters, status, permissions, serializers
 from .models import User, Notebook, Page, Version, Draft, Post, Vote
 from .serializers import UserSerializer, NotebookSerializer, PageSerializer, VersionSerializer, DraftSerializer, PostSerializer
 from rest_framework.response import Response
@@ -72,17 +72,40 @@ class PageListCreateView(generics.ListCreateAPIView):
         notebook_id = self.kwargs.get('notebook_id')
         return Page.objects.filter(notebook_id=notebook_id).order_by('-created_at')
     
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        """Create a new Page and an initial empty Version, return the serialized Page.
+
+        We override create() so we can attach the initial Version to the Page
+        and return the Page serializer (including the latest_version) to the client.
+        """
+        notebook_id = self.kwargs.get('notebook_id')
+        if not notebook_id:
+            raise serializers.ValidationError("Notebook id is required in URL.")
+
+        try:
+            notebook = Notebook.objects.get(notebook_id=notebook_id)
+        except Notebook.DoesNotExist:
+            return Response({"detail": "Notebook not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         with transaction.atomic():
-            page = serializer.save(notebook_id=self.request.data.get('notebook_id'))
+            # Pass the notebook instance when saving the Page
+            page = serializer.save(notebook_id=notebook)
+
+            # create an initial empty Version and attach it
             version = Version.objects.create(
-                user_id=self.request.user,
+                user_id=request.user,
+                page_id=page,
                 previous_version=None,
                 content=""
             )
             page.latest_version = version
             page.save()
-        return version
+
+        out_serializer = PageSerializer(page, context={'request': request})
+        return Response(out_serializer.data, status=status.HTTP_201_CREATED)
 
 class PageDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Page.objects.all()
