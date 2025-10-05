@@ -189,7 +189,7 @@ export default function PostsGrid() {
               }}
               title="Set voting threshold for auto-merging posts"
             >
-              Set Threshold ({notebook.merge_threshold || 3})
+              Set Merge Threshold ({notebook.merge_threshold || 3})
             </button>
           )}
         </div>

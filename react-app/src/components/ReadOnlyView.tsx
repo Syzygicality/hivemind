@@ -123,8 +123,8 @@ export default function ReadOnlyView() {
       const res = await api.patch(`/api/notebooks/${notebookId}/pages/${pageId}/posts/${currentPost.post_id}/vote/`, {}, true)
       if (res.ok) {
         if (res.body.merged) {
-          // Post was merged and deleted - redirect back to notebook
-          navigate(`/notebook/${encodeURIComponent(notebookId || '')}`)
+          // Post was merged and deleted - redirect back to posts page since we came from there
+          navigate(`/posts/${encodeURIComponent(notebookId || '')}`)
         } else {
           // Update the post data
           setCurrentPost((prev: any) => ({
@@ -196,7 +196,19 @@ export default function ReadOnlyView() {
   return (
     <div className="readonly-root">
       <div className="readonly-header">
-        <button className="btn" onClick={() => navigate(`/notebook/${encodeURIComponent(notebookId || '')}`)}>Back</button>
+        <button 
+          className="btn" 
+          onClick={() => {
+            // If viewing a post, go back to posts page, otherwise go to notebook
+            if (postId) {
+              navigate(`/posts/${encodeURIComponent(notebookId || '')}`)
+            } else {
+              navigate(`/notebook/${encodeURIComponent(notebookId || '')}`)
+            }
+          }}
+        >
+          Back
+        </button>
         <h2 className="readonly-title">
           {title}
           {isViewingPost && <span style={{ color: '#666', fontSize: '0.8em', marginLeft: '10px' }}>(Viewing Post Changes)</span>}
