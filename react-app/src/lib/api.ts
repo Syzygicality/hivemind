@@ -46,6 +46,24 @@ export async function del(path: string, withAuth = false) {
   return request(path, { method: 'DELETE', headers })
 }
 
+export async function patch(path: string, data?: any, withAuth = false) {
+  const headers: Record<string,string> = { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+  if (withAuth) {
+    const t = getToken()
+    if (t) headers['Authorization'] = `Token ${t}`
+  }
+  return request(path, { method: 'PATCH', headers, body: data ? JSON.stringify(data) : undefined })
+}
+
+export async function put(path: string, data?: any, withAuth = false) {
+  const headers: Record<string,string> = { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+  if (withAuth) {
+    const t = getToken()
+    if (t) headers['Authorization'] = `Token ${t}`
+  }
+  return request(path, { method: 'PUT', headers, body: data ? JSON.stringify(data) : undefined })
+}
+
 export { getToken }
 
-export default { get, post, del, getToken }
+export default { get, post, patch, put, del, getToken }

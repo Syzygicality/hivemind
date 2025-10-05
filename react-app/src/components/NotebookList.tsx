@@ -156,29 +156,45 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
         payload.user_ids = selectedContributors
       }
       
+      // create the notebook first
       const res = await api.post('/api/notebooks/', payload, true)
       
       if (res.ok && res.body) {
+        const created = res.body
+
+        // if there are contributors, send a patch to add them
+        if (selectedContributors.length > 0) {
+          const patchRes = await api.patch(`/api/notebooks/${created.notebook_id}/`, { add_user_ids: selectedContributors }, true)
+          if (!patchRes.ok) {
+            setError(patchRes.body?.detail || 'Failed to add contributors')
+            console.error('Failed to add contributors', patchRes)
+          }
+        }
+
+        // fetch the notebook detail to get the updated user list (or reuse created if backend returns it)
+        const detailRes = await api.get(`/api/notebooks/${created.notebook_id}/`, true)
+        const nbData = detailRes.ok ? detailRes.body : created
+
         // Map the response to UI format
         const newNotebook = {
-          notebook_id: res.body.notebook_id,
-          title: res.body.title,
-          admin: res.body.admin_id ? {
-            id: res.body.admin_id.id,
-            username: res.body.admin_id.username
+          notebook_id: nbData.notebook_id,
+          title: nbData.title,
+          admin: nbData.admin_id ? {
+            id: nbData.admin_id.id,
+            username: nbData.admin_id.username
           } : undefined,
-          user_ids: res.body.user_ids || [],
-          created_at: res.body.created_at,
-          updated_at: res.body.updated_at,
-          pages: res.body.pages || [],
-          isPrivate: !(res.body.user_ids && res.body.user_ids.length > 0),
-          contributors: res.body.user_ids
-            ? res.body.user_ids
-                .filter((u: any) => u.id !== res.body.admin_id?.id)
+          user_ids: nbData.user_ids || [],
+          created_at: nbData.created_at,
+          updated_at: nbData.updated_at,
+          pages: nbData.pages || [],
+          isPrivate: !(nbData.user_ids && nbData.user_ids.length > 0),
+          contributors: nbData.user_ids
+            ? nbData.user_ids
+                .filter((u: any) => u.id !== nbData.admin_id?.id)
                 .map((u: any) => u.username)
             : []
         }
-        
+
         // Add to notebooks list
         setNotebooks(prev => [...prev, newNotebook])
         
