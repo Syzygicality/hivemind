@@ -51,7 +51,8 @@ export default function PageGrid({ notebook, refreshKey }: { notebook: any, refr
               <div className="page-card-meta">{p.latest_version?.created_at ? new Date(p.latest_version.created_at).toLocaleString() : ''}</div>
               <div className="page-card-snippet">{p.latest_version?.content ? p.latest_version.content.slice(0, 160) : 'No content yet.'}</div>
               <div className="page-card-actions">
-                <button className="btn primary">Open</button>
+                <button className="btn primary">History</button>
+                <button className="btn primary">Contribute</button>
               </div>
             </div>
           ))}
