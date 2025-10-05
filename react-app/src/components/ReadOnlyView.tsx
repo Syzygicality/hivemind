@@ -11,11 +11,13 @@ export default function ReadOnlyView() {
   
   const [content, setContent] = useState<string>('')
   const [postContent, setPostContent] = useState<string>('')
+  const [currentPost, setCurrentPost] = useState<any | null>(null)
   const [title, setTitle] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [isViewingPost, setIsViewingPost] = useState<boolean>(false)
   const [showDiff, setShowDiff] = useState<boolean>(true) // Whether to show diff when viewing post
+  const [voting, setVoting] = useState<boolean>(false)
 
   // Diff highlighting function for comparing post content with current page content
   const renderDiff = (postContent: string, currentContent: string) => {
@@ -79,6 +81,34 @@ export default function ReadOnlyView() {
     return <pre className="readonly-pre">{result}</pre>
   }
 
+  const handleVote = async () => {
+    if (!currentPost || voting || !notebookId || !pageId) return
+    
+    setVoting(true)
+    try {
+      const res = await api.patch(`/api/notebooks/${notebookId}/pages/${pageId}/posts/${currentPost.post_id}/vote/`, {}, true)
+      if (res.ok) {
+        if (res.body.merged) {
+          // Post was merged and deleted - redirect back to notebook
+          navigate(`/notebook/${encodeURIComponent(notebookId || '')}`)
+        } else {
+          // Update the post data
+          setCurrentPost((prev: any) => ({
+            ...prev,
+            votes: res.body.votes,
+            voted: !prev.voted
+          }))
+        }
+      } else {
+        console.error('Failed to vote:', res)
+      }
+    } catch (e) {
+      console.error('Error voting:', e)
+    } finally {
+      setVoting(false)
+    }
+  }
+
   useEffect(() => {
     let mounted = true
     async function load() {
@@ -111,6 +141,7 @@ export default function ReadOnlyView() {
               const post = postsRes.body.find((p: any) => p.post_id === postId)
               if (post) {
                 setPostContent(post.content || '')
+                setCurrentPost(post)
                 setIsViewingPost(true)
               }
             }
@@ -126,7 +157,7 @@ export default function ReadOnlyView() {
     }
     load()
     return () => { mounted = false }
-  }, [notebookId, pageId, postId])
+  }, [notebookId, pageId, postId || '']) // Use empty string to keep array size consistent
 
   return (
     <div className="readonly-root">
@@ -136,25 +167,43 @@ export default function ReadOnlyView() {
           {title}
           {isViewingPost && <span style={{ color: '#666', fontSize: '0.8em', marginLeft: '10px' }}>(Viewing Post Changes)</span>}
         </h2>
-        {isViewingPost && (
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+      </div>
+      
+      {isViewingPost && (
+        <div className="readonly-controls">
+          <div className="diff-controls">
             <button 
               className={`btn ${showDiff ? 'primary' : ''}`}
               onClick={() => setShowDiff(true)}
-              style={{ fontSize: '0.9em' }}
             >
               Show Changes
             </button>
             <button 
               className={`btn ${!showDiff ? 'primary' : ''}`}
               onClick={() => setShowDiff(false)}
-              style={{ fontSize: '0.9em' }}
             >
               Show Post Only
             </button>
           </div>
-        )}
-      </div>
+          
+          {currentPost && (
+            <div className="voting-controls">
+              <button 
+                className={`btn vote-btn ${currentPost.voted ? 'voted' : ''}`}
+                onClick={handleVote}
+                disabled={voting}
+                title={currentPost.voted ? 'Remove vote' : 'Vote for this post'}
+              >
+                {voting ? '...' : '▲'}
+              </button>
+              <span className="vote-count">
+                {currentPost.votes || 0} votes
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      
       {loading ? (
         <div className="readonly-loading">Loading page...</div>
       ) : error ? (

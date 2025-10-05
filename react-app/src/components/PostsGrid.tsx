@@ -8,58 +8,96 @@ export default function PostsGrid() {
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [votingPosts, setVotingPosts] = useState<Set<string>>(new Set())
   const navigate = useNavigate()
 
-  useEffect(() => {
-    let mounted = true
-    async function load() {
-      setLoading(true)
-      setError(null)
-      try {
-        if (!notebookId) {
-          setError('Missing notebook id')
-          return
+  const handleVote = async (postId: string) => {
+    if (votingPosts.has(postId)) return // Prevent double-clicking
+    
+    setVotingPosts(prev => new Set(prev.add(postId)))
+    
+    try {
+      const post = posts.find(p => p.post_id === postId)
+      if (!post) return
+      
+      const res = await api.patch(`/api/notebooks/${notebookId}/pages/${post.page_id?.page_id}/posts/${postId}/vote/`, {}, true)
+      if (res.ok) {
+        if (res.body.merged) {
+          // Post was merged and deleted - reload the posts list
+          await loadPosts()
+        } else {
+          // Update the vote count for this post
+          setPosts(prevPosts => 
+            prevPosts.map(p => 
+              p.post_id === postId 
+                ? { ...p, votes: res.body.votes, voted: !p.voted }
+                : p
+            )
+          )
         }
-        // fetch pages for notebook
-        const pagesRes = await api.get(`/api/notebooks/${notebookId}/pages/`, true)
-        if (!mounted) return
-        if (!pagesRes.ok || !Array.isArray(pagesRes.body)) {
-          setError('Failed to load pages')
-          return
-        }
-
-        const pageList = pagesRes.body
-        const allPosts: any[] = []
-        // fetch posts per page
-        await Promise.all(pageList.map(async (p: any) => {
-          try {
-            const pres = await api.get(`/api/notebooks/${notebookId}/pages/${p.page_id}/posts/`, true)
-            if (pres.ok && Array.isArray(pres.body)) {
-              pres.body.forEach((post: any) => {
-                allPosts.push({
-                  ...post,
-                  pageTitle: p.title
-                })
-              })
-            }
-          } catch (e) {
-            // ignore per-page failures
-          }
-        }))
-
-        if (mounted) {
-          // sort posts by created_at desc
-          allPosts.sort((a, b) => (new Date(b.created_at).getTime() - new Date(a.created_at).getTime()))
-          setPosts(allPosts)
-        }
-      } catch (e) {
-        if (mounted) setError('Error loading posts')
-      } finally {
-        if (mounted) setLoading(false)
+      } else {
+        console.error('Failed to vote:', res)
       }
+    } catch (e) {
+      console.error('Error voting:', e)
+    } finally {
+      setVotingPosts(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(postId)
+        return newSet
+      })
     }
-    load()
-    return () => { mounted = false }
+  }
+
+  const loadPosts = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      if (!notebookId) {
+        setError('Missing notebook id')
+        return
+      }
+      // fetch pages for notebook
+      const pagesRes = await api.get(`/api/notebooks/${notebookId}/pages/`, true)
+      if (!pagesRes.ok || !Array.isArray(pagesRes.body)) {
+        setError('Failed to load pages')
+        return
+      }
+
+      const pageList = pagesRes.body
+      const allPosts: any[] = []
+      // fetch posts per page
+      await Promise.all(pageList.map(async (p: any) => {
+        try {
+          const pres = await api.get(`/api/notebooks/${notebookId}/pages/${p.page_id}/posts/`, true)
+          if (pres.ok && Array.isArray(pres.body)) {
+            pres.body.forEach((post: any) => {
+              allPosts.push({
+                ...post,
+                pageTitle: p.title
+              })
+            })
+          }
+        } catch (e) {
+          // ignore per-page failures
+        }
+      }))
+
+      // sort posts by votes desc, then by created_at desc
+      allPosts.sort((a, b) => {
+        if (b.votes !== a.votes) return b.votes - a.votes
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+      setPosts(allPosts)
+    } catch (e) {
+      setError('Error loading posts')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadPosts()
   }, [notebookId])
 
   return (
@@ -88,6 +126,17 @@ export default function PostsGrid() {
                 {post.content?.slice(0, 240) || ''}
               </div>
               <div className="post-card-actions">
+                <div className="vote-section">
+                  <button 
+                    className={`btn vote-btn ${post.voted ? 'voted' : ''}`}
+                    onClick={() => handleVote(post.post_id)}
+                    disabled={votingPosts.has(post.post_id)}
+                    title={post.voted ? 'Remove vote' : 'Vote for this post'}
+                  >
+                    {votingPosts.has(post.post_id) ? '...' : '▲'}
+                  </button>
+                  <span className="vote-count">{post.votes || 0}</span>
+                </div>
                 <button 
                   className="btn primary" 
                   onClick={() => navigate(`/view/${notebookId}/${post.page_id?.page_id}?post=${post.post_id}`)}

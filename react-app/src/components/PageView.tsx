@@ -8,6 +8,7 @@ export default function PageView() {
   const { notebookId } = useParams()
   const navigate = useNavigate()
   const [notebook, setNotebook] = useState<any | null>(null)
+  const [currentUser, setCurrentUser] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pageRefreshKey, setPageRefreshKey] = useState(0)
@@ -26,24 +27,36 @@ export default function PageView() {
       }
 
       try {
-        const res = await api.get(`/api/notebooks/${notebookId}/`, true)
+        // Load notebook and current user in parallel
+        const [notebookRes, userRes] = await Promise.all([
+          api.get(`/api/notebooks/${notebookId}/`, true),
+          api.get('/auth/user/', true)
+        ])
+        
         if (!mounted) return
 
-        if (res.ok && res.body) {
+        // Handle notebook data
+        if (notebookRes.ok && notebookRes.body) {
           const nb = {
-            notebook_id: res.body.notebook_id,
-            title: res.body.title,
-            admin: res.body.admin_id ? { id: res.body.admin_id.id, username: res.body.admin_id.username } : undefined,
-            user_ids: res.body.user_ids || [],
-            created_at: res.body.created_at,
-            updated_at: res.body.updated_at,
-            pages: res.body.pages || [],
-            isPrivate: !(res.body.user_ids && res.body.user_ids.length > 0),
-            contributors: res.body.user_ids ? res.body.user_ids.map((u: any) => u.username) : []
+            notebook_id: notebookRes.body.notebook_id,
+            title: notebookRes.body.title,
+            admin: notebookRes.body.admin_id ? { id: notebookRes.body.admin_id.id, username: notebookRes.body.admin_id.username } : undefined,
+            user_ids: notebookRes.body.user_ids || [],
+            created_at: notebookRes.body.created_at,
+            updated_at: notebookRes.body.updated_at,
+            pages: notebookRes.body.pages || [],
+            merge_threshold: notebookRes.body.merge_threshold,
+            isPrivate: !(notebookRes.body.user_ids && notebookRes.body.user_ids.length > 0),
+            contributors: notebookRes.body.user_ids ? notebookRes.body.user_ids.map((u: any) => u.username) : []
           }
           setNotebook(nb)
         } else {
           setError('Failed to load notebook')
+        }
+
+        // Handle user data
+        if (userRes.ok && userRes.body) {
+          setCurrentUser(userRes.body)
         }
       } catch (e) {
         console.error('Error loading notebook:', e)
@@ -89,6 +102,22 @@ export default function PageView() {
   const handleCancelNewPage = () => {
     setNewPageName('')
     setShowNewPageInput(false)
+  }
+
+  const handleThresholdUpdate = () => {
+    // Reload notebook to get updated threshold
+    setPageRefreshKey(k => k + 1)
+    // Re-fetch notebook data
+    if (notebookId) {
+      api.get(`/api/notebooks/${notebookId}/`, true).then(res => {
+        if (res.ok && res.body) {
+          setNotebook((prev: any) => ({
+            ...prev,
+            merge_threshold: res.body.merge_threshold
+          }))
+        }
+      })
+    }
   }
 
   if (loading) {
@@ -155,7 +184,11 @@ export default function PageView() {
         siteTitle={notebook.title} 
         activeNotebookId={notebook.notebook_id} 
         onReturn={handleReturn} 
-        onAddPage={handleAddPage} 
+        onAddPage={handleAddPage}
+        notebookAdmin={notebook.admin}
+        currentUserId={currentUser?.id}
+        mergeThreshold={notebook.merge_threshold}
+        onThresholdUpdate={handleThresholdUpdate}
       />
       <main className="home-main">
         <div className="panel-wrap">

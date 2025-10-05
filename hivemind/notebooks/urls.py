@@ -14,5 +14,5 @@ urlpatterns = [
     path('notebooks/<uuid:notebook_id>/drafts/<uuid:draft_id>', DraftDetailView.as_view(), name='draft-detail'),
     path('notebooks/<uuid:notebook_id>/pages/<uuid:page_id>/posts/', PostListCreateView.as_view(), name='post-list-create'),
     path('notebooks/<uuid:notebook_id>/pages/<uuid:page_id>/posts/<uuid:post_id>/', PostDetailView.as_view(), name='post-detail'),
-    path('vote/post/', PostVoteView.as_view(), name='vote-post'),
+    path('notebooks/<uuid:notebook_id>/pages/<uuid:page_id>/posts/<uuid:post_id>/vote/', PostVoteView.as_view(), name='vote-post'),
 ]

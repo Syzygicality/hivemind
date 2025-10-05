@@ -1,5 +1,6 @@
 import api from '../lib/api'
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 interface HeaderProps {
   onNewNotebook: () => void
@@ -7,10 +8,38 @@ interface HeaderProps {
   activeNotebookId?: string | null
   onReturn?: () => void
   onAddPage?: () => void
+  notebookAdmin?: { id: string, username: string } | null
+  currentUserId?: string | null
+  mergeThreshold?: number | null
+  onThresholdUpdate?: () => void
 }
 
-export default function Header({ onNewNotebook, siteTitle, activeNotebookId, onReturn, onAddPage }: HeaderProps) {
+export default function Header({ onNewNotebook, siteTitle, activeNotebookId, onReturn, onAddPage, notebookAdmin, currentUserId, mergeThreshold, onThresholdUpdate }: HeaderProps) {
   const navigate = useNavigate()
+  const [showThresholdInput, setShowThresholdInput] = useState(false)
+  const [newThreshold, setNewThreshold] = useState(mergeThreshold || 1)
+  const [updating, setUpdating] = useState(false)
+
+  const isAdmin = notebookAdmin && currentUserId && notebookAdmin.id === currentUserId
+
+  const handleUpdateThreshold = async () => {
+    if (!activeNotebookId || !isAdmin) return
+    
+    setUpdating(true)
+    try {
+      const res = await api.patch(`/api/notebooks/${activeNotebookId}/`, { merge_threshold: newThreshold }, true)
+      if (res.ok) {
+        setShowThresholdInput(false)
+        if (onThresholdUpdate) onThresholdUpdate()
+      } else {
+        console.error('Failed to update threshold')
+      }
+    } catch (e) {
+      console.error('Error updating threshold:', e)
+    } finally {
+      setUpdating(false)
+    }
+  }
   const handleLogout = async () => {
     try {
       await api.post('/auth/token/logout/', undefined, true)
@@ -41,7 +70,57 @@ export default function Header({ onNewNotebook, siteTitle, activeNotebookId, onR
       <header className="site-header">
         <div className="header-actions">
           {siteTitle ? (
-            <button className="btn primary" onClick={() => { if (onAddPage) onAddPage() }}>Add Page</button>
+            <>
+              <button className="btn primary" onClick={() => { if (onAddPage) onAddPage() }}>Add Page</button>
+              {isAdmin && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
+                  {!showThresholdInput ? (
+                    <>
+                      <span style={{ fontSize: '0.9em', color: '#666' }}>
+                        Merge Threshold: {mergeThreshold || 'Not set'}
+                      </span>
+                      <button 
+                        className="btn" 
+                        onClick={() => setShowThresholdInput(true)}
+                        style={{ fontSize: '0.8em', padding: '4px 8px' }}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        type="number"
+                        min="1"
+                        value={newThreshold}
+                        onChange={(e) => setNewThreshold(parseInt(e.target.value) || 1)}
+                        style={{ width: '60px', padding: '4px' }}
+                        disabled={updating}
+                      />
+                      <button 
+                        className="btn primary" 
+                        onClick={handleUpdateThreshold}
+                        disabled={updating}
+                        style={{ fontSize: '0.8em', padding: '4px 8px' }}
+                      >
+                        {updating ? 'Saving...' : 'Save'}
+                      </button>
+                      <button 
+                        className="btn" 
+                        onClick={() => {
+                          setShowThresholdInput(false)
+                          setNewThreshold(mergeThreshold || 1)
+                        }}
+                        disabled={updating}
+                        style={{ fontSize: '0.8em', padding: '4px 8px' }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
             <button className="btn primary" onClick={onNewNotebook}>Create Notebook</button>
           )}

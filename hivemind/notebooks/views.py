@@ -33,7 +33,11 @@ class NotebookListCreateView(generics.ListCreateAPIView):
         ).distinct().order_by('-updated_at')
     
     def perform_create(self, serializer):
-        serializer.save(admin_id=self.request.user)
+        # Set default merge threshold of 3 if not provided
+        if 'merge_threshold' not in self.request.data or self.request.data.get('merge_threshold') is None:
+            serializer.save(admin_id=self.request.user, merge_threshold=3)
+        else:
+            serializer.save(admin_id=self.request.user)
 
 class NotebookDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotebookSerializer
@@ -236,7 +240,9 @@ class PostVoteView(generics.UpdateAPIView):
         page = post.page_id
         notebook = page.notebook_id
 
-        if post.votes >= notebook.merge_threshold:
+        # Check if merge threshold is set and if post has enough votes
+        merge_threshold = notebook.merge_threshold
+        if merge_threshold is not None and post.votes >= merge_threshold:
             new_version = Version.objects.create(
                 user_id=post.user_id,
                 page_id=page,
