@@ -2,10 +2,11 @@ import { useState } from 'react'
 import api from '../lib/api'
 import './PageEditor.css'
 
-export default function PageEditor({ notebookId, draftId, initialContent, onClose, onSaved }: { notebookId: string, draftId: string, initialContent?: string, onClose: () => void, onSaved?: () => void }) {
+export default function PageEditor({ notebookId, pageId, draftId, initialContent, onClose, onSaved }: { notebookId: string, pageId: string, draftId: string, initialContent?: string, onClose: () => void, onSaved?: () => void }) {
   const [content, setContent] = useState(initialContent || '')
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isPosting, setIsPosting] = useState(false)
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -34,7 +35,29 @@ export default function PageEditor({ notebookId, draftId, initialContent, onClos
       <div className="page-editor-content">
         <div className="page-editor-header">
           <h3>Edit Page</h3>
-          <button className="btn" onClick={onClose}>Exit</button>
+          <button className="btn" onClick={async () => {
+            if (!pageId) return
+            setIsPosting(true)
+            setError(null)
+            try {
+              // create a post from this draft/content
+              const postRes = await api.post(`/api/notebooks/${notebookId}/pages/${pageId}/posts/`, { draft_id: draftId, content }, true)
+              if (!postRes.ok) {
+                setError('Failed to create post')
+                setIsPosting(false)
+                return
+              }
+              // optionally refresh parent
+              if (onSaved) onSaved()
+              // close editor after posting
+              onClose()
+            } catch (e) {
+              console.error(e)
+              setError('Error creating post')
+            } finally {
+              setIsPosting(false)
+            }
+          }}>{isPosting ? 'Posting...' : 'Post'}</button>
         </div>
         {error && <div className="error-message">{error}</div>}
         <textarea
