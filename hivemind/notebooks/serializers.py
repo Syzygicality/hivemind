@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Notebook, Page, Version, Draft, Post
+from .models import User, Notebook, Page, Version, Draft, Post, Vote
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,7 +40,14 @@ class DraftSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     user_id = UserSerializer(read_only=True)
     page_id = PageSerializer(read_only=True)
+    voted = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ['post_id', 'user_id', 'page_id', 'draft_id', 'votes', 'created_at', 'updated_at']
+    
+    def get_voted(self, obj):
+        user = self.context['request'].user
+        if not user or user.is_anonymous:
+            return False
+        return Vote.objects.filter(post_id=obj, user_id=user).exists()
