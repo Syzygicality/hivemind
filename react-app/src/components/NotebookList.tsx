@@ -4,7 +4,12 @@ import api from '../lib/api'
 import NotebookItem from './NotebookItem'
 import PageGrid from './PageGrid'
 
-const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) => {
+type NotebookListProps = {
+  onActiveNotebookChange?: (title: string | null) => void
+}
+
+const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageView?: () => void }, NotebookListProps>((props, ref) => {
+  const { onActiveNotebookChange } = props
   const [notebooks, setNotebooks] = useState<any[]>([])
   const [showNewNotebookInput, setShowNewNotebookInput] = useState(false)
   const [newNotebookName, setNewNotebookName] = useState('')
@@ -21,7 +26,24 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
   const [error, setError] = useState<string | null>(null)
 
   useImperativeHandle(ref, () => ({
-    showNewNotebookInput: () => setShowNewNotebookInput(true)
+    showNewNotebookInput: () => setShowNewNotebookInput(true),
+    closePageView: () => { setShowNotebookPage(false); setCurrentNotebook(null); if (onActiveNotebookChange) onActiveNotebookChange(null) },
+    addPage: async () => {
+      // create a minimal page under currentNotebook
+      if (!currentNotebook) return
+      try {
+        const payload = { title: 'New Page' }
+        const res = await api.post(`/api/notebooks/${currentNotebook.notebook_id}/pages/`, payload, true)
+        if (res.ok) {
+          // refresh pages by re-opening the notebook
+          setCurrentNotebook((prev: any) => ({ ...prev }))
+        } else {
+          console.error('Failed to add page', res)
+        }
+      } catch (e) {
+        console.error('Error adding page', e)
+      }
+    }
   }))
 
   // Load notebooks from API
@@ -133,12 +155,17 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
     // open notebook page for collaborative notebooks as well
     setCurrentNotebook(notebook)
     setShowNotebookPage(true)
+    if (onActiveNotebookChange) onActiveNotebookChange(notebook.title)
   }
 
-  const handleBackToList = () => {
-    setShowNotebookPage(false)
-    setCurrentNotebook(null)
-  }
+  
+
+  // Notify parent when PageGrid closes
+  useEffect(() => {
+    if (!showNotebookPage && onActiveNotebookChange) {
+      onActiveNotebookChange(null)
+    }
+  }, [showNotebookPage, onActiveNotebookChange])
 
   const handleCreateNotebook = async () => {
     if (!newNotebookName.trim()) return
@@ -227,7 +254,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
   }
 
   if (showNotebookPage && currentNotebook) {
-    return <PageGrid notebook={currentNotebook} onBack={handleBackToList} />
+    return <PageGrid notebook={currentNotebook} />
   }
 
   return (

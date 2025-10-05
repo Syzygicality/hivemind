@@ -319,3 +319,24 @@ body,
 .logout-in-title .btn {
   padding: 8px 10px;
 }
+
+/* return button on the left of the site title (mirrors logout on the right) */
+.return-in-title {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.return-in-title .btn {
+  padding: 8px 10px;
+}
+
+@media (max-width: 520px) {
+
+  .return-in-title,
+  .logout-in-title {
+    position: static;
+    transform: none;
+  }
+}
