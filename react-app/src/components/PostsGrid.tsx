@@ -69,6 +69,11 @@ export default function PostsGrid() {
       <div className="posts-root">
         {loading && <div className="loading">Loading posts...</div>}
         {error && <div className="error-message">{error}</div>}
+        {!loading && !error && posts.length === 0 && (
+          <div className="empty-posts">
+            <p>There are no current posts. Check back later!</p>
+          </div>
+        )}
         <div className="posts-grid">
           {posts.map((post) => (
             <div className="post-card" key={post.post_id}>
