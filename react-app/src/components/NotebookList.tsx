@@ -2,6 +2,7 @@ import { useState, forwardRef, useImperativeHandle, useEffect } from 'react'
 import './NotebookList.css'
 import api from '../lib/api'
 import NotebookItem from './NotebookItem'
+import PageGrid from './PageGrid'
 
 const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) => {
   const [notebooks, setNotebooks] = useState<any[]>([])
@@ -13,7 +14,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
   const [selectedContributors, setSelectedContributors] = useState<string[]>([])
   const [showNotebookPage, setShowNotebookPage] = useState(false)
   const [currentNotebook, setCurrentNotebook] = useState<any>(null)
-  const [notebookContent, setNotebookContent] = useState('')
+  // notebook editor content removed in favor of PageGrid
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -226,23 +227,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
   }
 
   if (showNotebookPage && currentNotebook) {
-    return (
-      <div className="notebook-page">
-        <div className="notebook-header">
-          <button onClick={handleBackToList} className="back-button">← Back to Notebooks</button>
-          <h1 className="notebook-title">{currentNotebook.title}</h1>
-        </div>
-        <div className="notebook-editor">
-          <textarea
-            value={notebookContent}
-            onChange={(e) => setNotebookContent(e.target.value)}
-            placeholder="Start writing your notes here..."
-            className="notebook-textarea"
-            autoFocus
-          />
-        </div>
-      </div>
-    )
+    return <PageGrid notebook={currentNotebook} onBack={handleBackToList} />
   }
 
   return (
