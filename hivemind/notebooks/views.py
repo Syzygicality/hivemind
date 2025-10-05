@@ -184,11 +184,14 @@ class PostListCreateView(generics.ListCreateAPIView):
         )
     
     def perform_create(self, serializer):
-        draft = get_object_or_404(Draft, id=self.request.data.get('draft_id'), user_id=self.request.user)
+        draft = get_object_or_404(Draft, draft_id=self.request.data.get('draft_id'), user_id=self.request.user)
+        # Use the content from the request (which should be the draft content) or fall back to draft content
+        content = self.request.data.get('content', draft.content)
         serializer.save(
             user_id=self.request.user,
             page_id=draft.page_id,
             draft_id=draft,
+            content=content,
             votes=0
         )
 

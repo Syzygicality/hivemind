@@ -35,7 +35,12 @@ export default function PostsGrid() {
           try {
             const pres = await api.get(`/api/notebooks/${notebookId}/pages/${p.page_id}/posts/`, true)
             if (pres.ok && Array.isArray(pres.body)) {
-              pres.body.forEach((post: any) => allPosts.push({ ...post, pageTitle: p.title }))
+              pres.body.forEach((post: any) => {
+                allPosts.push({
+                  ...post,
+                  pageTitle: p.title
+                })
+              })
             }
           } catch (e) {
             // ignore per-page failures
@@ -79,9 +84,16 @@ export default function PostsGrid() {
             <div className="post-card" key={post.post_id}>
               <div className="post-card-title">{post.pageTitle || 'Page'}</div>
               <div className="post-card-meta">By {post.user_id?.username || 'Unknown'} • {new Date(post.created_at).toLocaleString()}</div>
-              <div className="post-card-content">{post.content?.slice(0, 240)}</div>
+              <div className="post-card-content">
+                {post.content?.slice(0, 240) || ''}
+              </div>
               <div className="post-card-actions">
-                {/* future: view post detail */}
+                <button 
+                  className="btn primary" 
+                  onClick={() => navigate(`/view/${notebookId}/${post.page_id?.page_id}?post=${post.post_id}`)}
+                >
+                  View Changes
+                </button>
               </div>
             </div>
           ))}
