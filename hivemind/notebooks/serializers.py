@@ -16,6 +16,7 @@ class NotebookSerializer(serializers.ModelSerializer):
     
 class VersionSerializer(serializers.ModelSerializer):
     user_id = UserSerializer(read_only=True)
+    content = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Version
@@ -32,6 +33,7 @@ class PageSerializer(serializers.ModelSerializer):
 class DraftSerializer(serializers.ModelSerializer):
     user_id = UserSerializer(read_only=True)
     page_id = PageSerializer(read_only=True)
+    content = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Draft
@@ -41,10 +43,11 @@ class PostSerializer(serializers.ModelSerializer):
     user_id = UserSerializer(read_only=True)
     page_id = PageSerializer(read_only=True)
     voted = serializers.SerializerMethodField()
+    content = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Post
-        fields = ['post_id', 'user_id', 'page_id', 'draft_id', 'votes', 'created_at', 'updated_at']
+        fields = ['post_id', 'user_id', 'page_id', 'draft_id', 'content', 'votes', 'created_at', 'updated_at', 'voted']
     
     def get_voted(self, obj):
         user = self.context['request'].user
