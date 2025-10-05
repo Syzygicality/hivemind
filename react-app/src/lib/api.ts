@@ -37,6 +37,15 @@ export async function post(path: string, data?: any, withAuth = false) {
   return request(path, { method: 'POST', headers, body: data ? JSON.stringify(data) : undefined })
 }
 
+export async function del(path: string, withAuth = false) {
+  const headers: Record<string,string> = { 'Accept': 'application/json' }
+  if (withAuth) {
+    const t = getToken()
+    if (t) headers['Authorization'] = `Token ${t}`
+  }
+  return request(path, { method: 'DELETE', headers })
+}
+
 export { getToken }
 
-export default { get, post, getToken }
+export default { get, post, del, getToken }

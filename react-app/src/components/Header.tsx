@@ -19,13 +19,14 @@ export default function Header({ onNewNotebook }: HeaderProps) {
     <>
       <div className="site-title-bar">
         <h1 className="site-title">My Hivemind</h1>
+        <div className="logout-in-title">
+          <button className="btn" onClick={handleLogout}>Logout</button>
+        </div>
       </div>
 
       <header className="site-header">
         <div className="header-actions">
-          <button className="btn">Add Notebook</button>
           <button className="btn primary" onClick={onNewNotebook}>Create Notebook</button>
-          <button className="btn" onClick={handleLogout}>Logout</button>
         </div>
       </header>
     </>

@@ -16,6 +16,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
   const [currentNotebook, setCurrentNotebook] = useState<any>(null)
   const [notebookContent, setNotebookContent] = useState('')
   const [allUsers, setAllUsers] = useState<any[]>([])
+  const [currentUser, setCurrentUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,6 +68,15 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
       }
     }
     loadNotebooks()
+    // also fetch current user so we can determine admin privileges
+    ;(async () => {
+      try {
+        const r = await api.get('/auth/users/me/', true)
+        if (mounted && r.ok) setCurrentUser(r.body)
+      } catch (e) {
+        // ignore
+      }
+    })()
     return () => { mounted = false }
   }, [])
 
@@ -404,7 +414,24 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
         <ul className="notebook-list">
           {notebooks.map((notebook) => (
             <li key={notebook.notebook_id} onClick={() => handleNotebookClick(notebook)}>
-              <NotebookItem notebook={notebook} />
+              <NotebookItem
+                notebook={notebook}
+                currentUser={currentUser}
+                onDelete={async (id: string) => {
+                  // optimistic update: remove locally then attempt delete
+                  if (!confirm('Delete this notebook? This cannot be undone.')) return
+                  try {
+                    const res = await api.del(`/api/notebooks/${id}/`, true)
+                    if (res.ok) {
+                      setNotebooks(prev => prev.filter(n => n.notebook_id !== id))
+                    } else {
+                      setError(res.body?.detail || 'Failed to delete notebook')
+                    }
+                  } catch (err) {
+                    setError('Error deleting notebook')
+                  }
+                }}
+              />
             </li>
           ))}
           {notebooks.length === 0 && !isLoading && (

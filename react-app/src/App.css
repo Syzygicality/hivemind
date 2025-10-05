@@ -5,7 +5,8 @@
   /* prevent horizontal overflow inside the app container */
   overflow-x: hidden;
   margin: 0;
-  padding: 2rem 1rem;
+  /* reduce top padding so the title banner sits closer to the top */
+  padding: 1rem 1rem 1rem;
   text-align: center;
 }
 
@@ -184,6 +185,67 @@ body,
   width: 100%;
 }
 
+/* Login page styles */
+.login-page-root {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 36px 16px 48px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 520px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(58, 45, 32, 0.06);
+  padding: 32px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.login-page-root>.site-title-bar {
+  width: 100%;
+  max-width: 720px;
+  padding: 20px 12px;
+}
+
+.login-card h2 {
+  margin: 0 0 18px;
+  font-size: 1.8rem;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.login-field input {
+  padding: 12px 14px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
+}
+
+.login-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.login-error {
+  color: #b00020;
+  margin-top: 12px;
+  white-space: pre-wrap;
+}
+
 .panel-wrap {
   width: 100%;
   max-width: 960px;
@@ -200,7 +262,8 @@ body,
 .site-title-bar {
   width: 100%;
   text-align: center;
-  padding: 36px 12px;
+  /* tighten vertical spacing so banner is closer to top */
+  padding: 18px 12px;
   background: linear-gradient(180deg, #fff9e6, #fffcf0);
   /* soft yellow gradient */
   border-bottom: 1px solid rgba(255, 122, 0, 0.12);
@@ -235,4 +298,24 @@ body,
   gap: 10px;
   /* push the action buttons slightly lower so they're closer to the notebook grid */
   margin-top: 22px;
+}
+
+/* fixed logout button at top-right */
+.site-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.logout-in-title {
+  position: absolute;
+  right: 14px;
+  /* vertically center using transform so it remains centered regardless of banner padding */
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.logout-in-title .btn {
+  padding: 8px 10px;
 }

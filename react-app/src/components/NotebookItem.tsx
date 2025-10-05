@@ -9,7 +9,13 @@ type Notebook = {
   contributors?: string[]
 }
 
-export default function NotebookItem({ notebook }: { notebook: Notebook }) {
+type NotebookItemProps = {
+  notebook: Notebook
+  currentUser?: { id: string }
+  onDelete?: (id: string) => void | Promise<void>
+}
+
+export default function NotebookItem({ notebook, currentUser, onDelete }: NotebookItemProps) {
   const formatParts = (iso?: string) => {
     if (!iso) return { time: '—', relative: '—' }
     const d = new Date(iso)
@@ -50,6 +56,18 @@ export default function NotebookItem({ notebook }: { notebook: Notebook }) {
 
   return (
     <div className={`notebook-item ${notebook.isPrivate ? 'clickable' : ''}`}>
+      {/* top-right actions (delete for admins) */}
+      {currentUser && notebook.admin && currentUser.id === notebook.admin.id && (
+        <div className="nb-top-actions">
+          <button
+            className="btn secondary nb-delete"
+            onClick={(e) => { e.stopPropagation(); if (onDelete) onDelete(notebook.notebook_id) }}
+            aria-label={`Delete notebook ${notebook.title}`}
+          >
+            Delete
+          </button>
+        </div>
+      )}
       <div className="content card-top">
         <div className="nb-title">{notebook.title}</div>
         <div className="nb-meta">
@@ -72,9 +90,35 @@ export default function NotebookItem({ notebook }: { notebook: Notebook }) {
 
       <div className="content card-bottom">
         <div className="nb-dates">
-          <div className="nb-created">Created: <span className="nb-date">{created.showTime ? (<><span className="nb-time">{created.time}</span> <span className="nb-rel">· {created.relative}</span></>) : (<span className="nb-rel">{created.relative}</span>)}</span></div>
-          <div className="nb-updated">Updated: <span className="nb-date">{updated.showTime ? (<><span className="nb-time">{updated.time}</span> <span className="nb-rel">· {updated.relative}</span></>) : (<span className="nb-rel">{updated.relative}</span>)}</span></div>
+          <div className="nb-created">
+            <div className="nb-label">Created</div>
+            <div className="nb-date">
+              {created.showTime ? (
+                <>
+                  <span className="nb-time">{created.time}</span>
+                  <span className="nb-rel">· {created.relative}</span>
+                </>
+              ) : (
+                <span className="nb-rel">{created.relative}</span>
+              )}
+            </div>
+          </div>
+
+          <div className="nb-updated">
+            <div className="nb-label">Updated</div>
+            <div className="nb-date">
+              {updated.showTime ? (
+                <>
+                  <span className="nb-time">{updated.time}</span>
+                  <span className="nb-rel">· {updated.relative}</span>
+                </>
+              ) : (
+                <span className="nb-rel">{updated.relative}</span>
+              )}
+            </div>
+          </div>
         </div>
+        {/* Delete button moved to the top-right */}
       </div>
     </div>
   )

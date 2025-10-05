@@ -29,6 +29,7 @@
     height: 100%;
     color: var(--text);
     border: 1px solid var(--border);
+    position: relative;
 }
 
 .notebook-item .content {
@@ -82,6 +83,8 @@
     justify-content: space-between;
     font-size: 12px;
     color: var(--muted);
+    gap: 12px;
+    align-items: center;
 }
 
 .notebook-item .nb-dates span {
@@ -93,6 +96,44 @@
     display: inline-flex;
     gap: 8px;
     align-items: center;
+}
+
+/* top-right action area inside a notebook card */
+.notebook-item .nb-top-actions {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.notebook-item .nb-top-actions .nb-delete {
+    padding: 6px 8px;
+    font-size: 12px;
+}
+
+/* layout for the labeled date blocks */
+.notebook-item .nb-created,
+.notebook-item .nb-updated {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* on wider screens keep created and updated spaced horizontally */
+@media (min-width: 520px) {
+    .notebook-item .nb-dates {
+        flex-direction: row;
+    }
+}
+
+/* on small screens stack timestamps vertically */
+@media (max-width: 519px) {
+    .notebook-item .nb-dates {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
 }
 
 .notebook-item .nb-time {

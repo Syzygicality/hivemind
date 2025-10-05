@@ -3,7 +3,7 @@ import api from '../lib/api'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
+  // email removed per request
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,8 +36,8 @@ export default function LoginPage() {
       return
     }
     setLoading(true)
-    // Djoser expects username and password; email is optional
-    const res = await api.post('/auth/users/', { username, password, email: email || undefined })
+  // Djoser expects username and password
+  const res = await api.post('/auth/users/', { username, password })
     setLoading(false)
     if (res.ok) {
       // registration created. Try to login and redirect
@@ -61,35 +61,39 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{padding:20, maxWidth:480}}>
-      <h2>{isRegistering ? 'Create account' : 'Sign in'}</h2>
-
-      <div style={{marginBottom:10}}>
-        <input placeholder="username" value={username} onChange={(e)=>setUsername(e.target.value)} />
+    <div className="login-page-root">
+      <div className="site-title-bar" style={{marginBottom:16}}>
+        <h1 className="site-title">HiveMind</h1>
       </div>
+      <div className="login-card">
+        <h2>{isRegistering ? 'Create account' : 'Sign in'}</h2>
 
-      <div style={{marginBottom:10}}>
-        <input placeholder="email (optional)" value={email} onChange={(e)=>setEmail(e.target.value)} />
-      </div>
-
-      <div style={{marginBottom:10}}>
-        <input type="password" placeholder="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
-      </div>
-
-      {isRegistering && (
-        <div style={{marginBottom:10}}>
-          <input type="password" placeholder="confirm password" value={confirm} onChange={(e)=>setConfirm(e.target.value)} />
+        <div className="login-field">
+          <label><strong>Username</strong></label>
+          <input placeholder="username" value={username} onChange={(e)=>setUsername(e.target.value)} />
         </div>
-      )}
 
-      <div style={{display:'flex',gap:10,alignItems:'center'}}>
-        <button onClick={isRegistering ? doRegister : doLogin} disabled={loading}>{loading ? '...' : (isRegistering ? 'Register' : 'Sign in')}</button>
-        <button onClick={()=>{ setIsRegistering(!isRegistering); setError(null); }}>
-          {isRegistering ? 'Back to login' : "Don't have an account? Register"}
-        </button>
+        <div className="login-field">
+          <label><strong>Password</strong></label>
+          <input type="password" placeholder="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
+        </div>
+
+        {isRegistering && (
+          <div className="login-field">
+            <label><strong>Confirm password</strong></label>
+            <input type="password" placeholder="confirm password" value={confirm} onChange={(e)=>setConfirm(e.target.value)} />
+          </div>
+        )}
+
+        <div className="login-actions">
+          <button onClick={isRegistering ? doRegister : doLogin} disabled={loading} className="btn primary">{loading ? '...' : (isRegistering ? 'Register' : 'Sign in')}</button>
+          <button className="btn" onClick={()=>{ setIsRegistering(!isRegistering); setError(null); }}>
+            {isRegistering ? 'Back to login' : "Don't have an account? Register"}
+          </button>
+        </div>
+
+        {error && <div className="login-error">{error}</div>}
       </div>
-
-      {error && <div style={{color:'red',marginTop:10,whiteSpace:'pre-wrap'}}>{error}</div>}
     </div>
   )
 }
