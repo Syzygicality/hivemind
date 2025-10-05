@@ -7,9 +7,8 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
   const [notebooks, setNotebooks] = useState<any[]>([])
   const [showNewNotebookInput, setShowNewNotebookInput] = useState(false)
   const [newNotebookName, setNewNotebookName] = useState('')
-  const [showPrivacyStep, setShowPrivacyStep] = useState(false)
-  const [isPrivate, setIsPrivate] = useState(true)
   const [showContributorsStep, setShowContributorsStep] = useState(false)
+  // ...existing state
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedContributors, setSelectedContributors] = useState<string[]>([])
   const [showNotebookPage, setShowNotebookPage] = useState(false)
@@ -46,7 +45,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
             created_at: n.created_at,
             updated_at: n.updated_at,
             pages: n.pages || [],
-            isPrivate: n.user_ids && n.user_ids.length <= 1,
+            isPrivate: !(n.user_ids && n.user_ids.length > 0),
             contributors: n.user_ids 
               ? n.user_ids
                   .filter((u: any) => u.id !== n.admin_id?.id)
@@ -107,14 +106,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
 
   const handleNameSubmit = () => {
     if (newNotebookName.trim()) {
-      setShowPrivacyStep(true)
-    }
-  }
-
-  const handlePrivacySubmit = () => {
-    if (isPrivate) {
-      handleCreateNotebook()
-    } else {
+      // skip privacy step; go straight to contributors
       setShowContributorsStep(true)
     }
   }
@@ -128,17 +120,18 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
   }
 
   const filteredUsers = searchQuery.trim() 
-    ? allUsers.filter(user => 
-        user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? allUsers
+        .filter(user => user.id !== currentUser?.id)
+        .filter(user => 
+          user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
     : []
 
   const handleNotebookClick = (notebook: any) => {
-    if (notebook.isPrivate) {
-      setCurrentNotebook(notebook)
-      setShowNotebookPage(true)
-    }
+    // open notebook page for collaborative notebooks as well
+    setCurrentNotebook(notebook)
+    setShowNotebookPage(true)
   }
 
   const handleBackToList = () => {
@@ -158,8 +151,8 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
         title: newNotebookName.trim(),
       }
       
-      // If not private, add selected contributors
-      if (!isPrivate && selectedContributors.length > 0) {
+      // always include selected contributors (we only support collaborative notebooks)
+      if (selectedContributors.length > 0) {
         payload.user_ids = selectedContributors
       }
       
@@ -178,7 +171,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
           created_at: res.body.created_at,
           updated_at: res.body.updated_at,
           pages: res.body.pages || [],
-          isPrivate: res.body.user_ids && res.body.user_ids.length <= 1,
+          isPrivate: !(res.body.user_ids && res.body.user_ids.length > 0),
           contributors: res.body.user_ids
             ? res.body.user_ids
                 .filter((u: any) => u.id !== res.body.admin_id?.id)
@@ -189,12 +182,10 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
         // Add to notebooks list
         setNotebooks(prev => [...prev, newNotebook])
         
-        // Reset form
+  // Reset form
         setNewNotebookName('')
         setShowNewNotebookInput(false)
-        setShowPrivacyStep(false)
-        setShowContributorsStep(false)
-        setIsPrivate(true)
+  setShowContributorsStep(false)
         setSelectedContributors([])
         setSearchQuery('')
       } else {
@@ -212,9 +203,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
   const handleCancel = () => {
     setNewNotebookName('')
     setShowNewNotebookInput(false)
-    setShowPrivacyStep(false)
     setShowContributorsStep(false)
-    setIsPrivate(true)
     setSelectedContributors([])
     setSearchQuery('')
     setError(null)
@@ -258,7 +247,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
       {showNewNotebookInput && (
         <div className="new-notebook-modal">
           <div className="new-notebook-content">
-            {!showPrivacyStep ? (
+            {!showContributorsStep ? (
               <>
                 <h3>Create New Notebook</h3>
                 <textarea
@@ -283,57 +272,6 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void }>((_, ref) =
                   </button>
                   <button onClick={handleNameSubmit} className="btn-create" disabled={isLoading}>
                     Next
-                  </button>
-                </div>
-              </>
-            ) : !showContributorsStep ? (
-              <>
-                <h3>Privacy Settings</h3>
-                <p>Who can access this notebook?</p>
-                <div className="privacy-options">
-                  <label className="privacy-option">
-                    <input
-                      type="radio"
-                      name="privacy"
-                      value="private"
-                      checked={isPrivate}
-                      onChange={() => setIsPrivate(true)}
-                      disabled={isLoading}
-                    />
-                    <span className="privacy-label">
-                      <strong>Keep Private</strong>
-                      <small>Only you can access this notebook</small>
-                    </span>
-                  </label>
-                  <label className="privacy-option">
-                    <input
-                      type="radio"
-                      name="privacy"
-                      value="collaborative"
-                      checked={!isPrivate}
-                      onChange={() => setIsPrivate(false)}
-                      disabled={isLoading}
-                    />
-                    <span className="privacy-label">
-                      <strong>Add Contributors</strong>
-                      <small>Invite others to collaborate</small>
-                    </span>
-                  </label>
-                </div>
-                <div className="new-notebook-actions">
-                  <button 
-                    onClick={() => setShowPrivacyStep(false)} 
-                    className="btn-cancel"
-                    disabled={isLoading}
-                  >
-                    Back
-                  </button>
-                  <button 
-                    onClick={handlePrivacySubmit} 
-                    className="btn-create"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? 'Creating...' : (isPrivate ? 'Create' : 'Next')}
                   </button>
                 </div>
               </>
