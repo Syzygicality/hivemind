@@ -135,7 +135,12 @@ class PostListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Post.objects.filter(user_id=self.request.user)
+        page_id = self.kwargs.get('page_id')
+        return (
+            Post.objects
+            .filter(page_id=page_id)
+            .order_by('-vote_count')
+        )
     
     def perform_create(self, serializer):
         draft_id = self.request.data.get('draft_id')
