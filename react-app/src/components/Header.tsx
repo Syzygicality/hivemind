@@ -21,10 +21,12 @@ export default function Header({ onNewNotebook, siteTitle, onReturn, onAddPage }
   return (
     <>
       <div className="site-title-bar">
-        <div className="return-in-title">
-          <button className="btn" onClick={() => { if (onReturn) onReturn(); else window.location.href = '/' }}>← Return to Notebooks</button>
-        </div>
-  <h1 className="site-title">{siteTitle ? siteTitle : 'My Hivemind'}</h1>
+        {siteTitle ? (
+          <div className="return-in-title">
+            <button className="btn" onClick={() => { if (onReturn) onReturn(); else window.location.href = '/' }}>← Return to Notebooks</button>
+          </div>
+        ) : null}
+        <h1 className="site-title">{siteTitle ? siteTitle : 'My Hivemind'}</h1>
         <div className="logout-in-title">
           <button className="btn" onClick={handleLogout}>Logout</button>
         </div>

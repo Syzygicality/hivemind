@@ -20,6 +20,8 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
   const [showNotebookPage, setShowNotebookPage] = useState(false)
   const [currentNotebook, setCurrentNotebook] = useState<any>(null)
   const [pageRefreshKey, setPageRefreshKey] = useState(0)
+  const [showNewPageInput, setShowNewPageInput] = useState(false)
+  const [newPageName, setNewPageName] = useState('')
   // notebook editor content removed in favor of PageGrid
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [currentUser, setCurrentUser] = useState<any>(null)
@@ -30,25 +32,40 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
     showNewNotebookInput: () => setShowNewNotebookInput(true),
     closePageView: () => { setShowNotebookPage(false); setCurrentNotebook(null); if (onActiveNotebookChange) onActiveNotebookChange(null) },
     addPage: async () => {
-      // create a minimal page under currentNotebook
+      // open the new page name modal
       if (!currentNotebook) return
-      try {
-        const payload = { title: 'New Page' }
-        const res = await api.post(`/api/notebooks/${currentNotebook.notebook_id}/pages/`, payload, true)
-        if (res.ok) {
-          // bump a refresh key so PageGrid will re-fetch pages
-          setPageRefreshKey((k) => k + 1)
-          // also update the notebook object reference so any consumers that
-          // depend on its identity see a change
-          setCurrentNotebook((prev: any) => (prev ? { ...prev } : prev))
-        } else {
-          console.error('Failed to add page', res)
-        }
-      } catch (e) {
-        console.error('Error adding page', e)
-      }
+      setShowNewPageInput(true)
     }
   }))
+
+  const handleCreatePage = async () => {
+    if (!currentNotebook) return
+    const title = newPageName.trim() || 'New Page'
+    setIsLoading(true)
+    try {
+      const payload = { title }
+      const res = await api.post(`/api/notebooks/${currentNotebook.notebook_id}/pages/`, payload, true)
+      if (res.ok) {
+        setPageRefreshKey(k => k + 1)
+        // close modal and reset
+        setNewPageName('')
+        setShowNewPageInput(false)
+        // ensure notebook reference updates
+        setCurrentNotebook((prev: any) => (prev ? { ...prev } : prev))
+      } else {
+        console.error('Failed to create page', res)
+      }
+    } catch (e) {
+      console.error('Error creating page', e)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCancelNewPage = () => {
+    setNewPageName('')
+    setShowNewPageInput(false)
+  }
 
   // Load notebooks from API
   useEffect(() => {
@@ -258,7 +275,42 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
   }
 
   if (showNotebookPage && currentNotebook) {
-    return <PageGrid notebook={currentNotebook} refreshKey={pageRefreshKey} />
+    return (
+      <>
+        {showNewPageInput && (
+          <div className="new-notebook-modal">
+            <div className="new-notebook-content">
+              <h3>Create New Page</h3>
+              <input
+                placeholder="Enter page name..."
+                value={newPageName}
+                onChange={(e) => setNewPageName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.ctrlKey) {
+                    handleCreatePage()
+                  } else if (e.key === 'Escape') {
+                    handleCancelNewPage()
+                  }
+                }}
+                autoFocus
+                className="new-notebook-textarea"
+                disabled={isLoading}
+              />
+              <div className="new-notebook-actions">
+                <button onClick={handleCancelNewPage} className="btn-cancel" disabled={isLoading}>
+                  Cancel
+                </button>
+                <button onClick={handleCreatePage} className="btn-create" disabled={isLoading}>
+                  {isLoading ? 'Creating...' : 'Create'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <PageGrid notebook={currentNotebook} refreshKey={pageRefreshKey} />
+      </>
+    )
   }
 
   return (

@@ -18,15 +18,20 @@
 
 .page-grid {
     display: grid;
+    /* match notebook layout: allow several columns, each at least 220px */
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
+    /* slightly larger vertical gap to create row spacing similar to notebooks */
+    gap: 36px 24px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
 
-    .empty-pages {
-        padding: 36px;
-        text-align: center;
-        color: var(--muted, #666);
-        font-size: 1rem;
-    }
+.empty-pages {
+    padding: 36px;
+    text-align: center;
+    color: var(--muted, #666);
+    font-size: 1rem;
 }
 
 .page-card {
@@ -35,7 +40,8 @@
     padding: 14px;
     border: 1px solid var(--border);
     box-shadow: 0 8px 20px rgba(58, 45, 32, 0.04);
-    min-height: 140px;
+    /* portrait / paper-like aspect: taller than wide */
+    min-height: 260px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -65,4 +71,10 @@
     display: flex;
     justify-content: flex-end;
     margin-top: 8px;
+}
+
+.page-card:hover {
+    transform: translateY(-6px);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+    box-shadow: 0 18px 40px rgba(255, 122, 0, 0.12);
 }
