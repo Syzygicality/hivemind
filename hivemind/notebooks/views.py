@@ -139,12 +139,29 @@ class DraftListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         return Draft.objects.filter(user_id=self.request.user)
     
-    def perform_create(self, serializer):
-        serializer.save(
-            user_id=self.request.user,
-            page_id_id=self.request.data.get('page_id'),
+    def create(self, request, *args, **kwargs):
+        """Create a new Draft linked to the current user and return the full serialized Draft."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        page_id = request.data.get('page_id')
+        if not page_id:
+            raise serializers.ValidationError({"page_id": "This field is required."})
+
+        # Optionally, verify page existence
+        try:
+            page = Page.objects.get(page_id=page_id)
+        except Page.DoesNotExist:
+            return Response({"detail": "Page not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        draft = serializer.save(
+            user_id=request.user,
+            page_id=page,
             content=""
         )
+
+        out_serializer = DraftSerializer(draft, context={'request': request})
+        return Response(out_serializer.data, status=status.HTTP_201_CREATED)
 
 class DraftDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DraftSerializer
