@@ -5,10 +5,10 @@ import NotebookItem from './NotebookItem'
 import PageGrid from './PageGrid'
 
 type NotebookListProps = {
-  onActiveNotebookChange?: (title: string | null) => void
+  onActiveNotebookChange?: (notebook: any | null) => void
 }
 
-const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageView?: () => void, addPage?: () => Promise<void> }, NotebookListProps>((props, ref) => {
+const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageView?: () => void, addPage?: () => Promise<void>, openNotebookById?: (id: string) => void }, NotebookListProps>((props, ref) => {
   const { onActiveNotebookChange } = props
   const [notebooks, setNotebooks] = useState<any[]>([])
   const [showNewNotebookInput, setShowNewNotebookInput] = useState(false)
@@ -35,6 +35,38 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
       // open the new page name modal
       if (!currentNotebook) return
       setShowNewPageInput(true)
+    },
+    openNotebookById: async (id: string) => {
+      // try to find locally
+      let nb = notebooks.find(n => n.notebook_id === id)
+      if (!nb) {
+        try {
+          const res = await api.get(`/api/notebooks/${id}/`, true)
+          if (res.ok && res.body) {
+            nb = {
+              notebook_id: res.body.notebook_id,
+              title: res.body.title,
+              admin: res.body.admin_id ? { id: res.body.admin_id.id, username: res.body.admin_id.username } : undefined,
+              user_ids: res.body.user_ids || [],
+              created_at: res.body.created_at,
+              updated_at: res.body.updated_at,
+              pages: res.body.pages || [],
+              isPrivate: !(res.body.user_ids && res.body.user_ids.length > 0),
+              contributors: res.body.user_ids ? res.body.user_ids.map((u: any) => u.username) : []
+            }
+            // add to local list
+            setNotebooks(prev => prev.includes(nb!) ? prev : [...prev, nb!])
+          }
+        } catch (e) {
+          console.error('Failed to fetch notebook for open request', e)
+        }
+      }
+
+      if (nb) {
+        setCurrentNotebook(nb)
+        setShowNotebookPage(true)
+        if (onActiveNotebookChange) onActiveNotebookChange(nb.title)
+      }
     }
   }))
 
@@ -176,7 +208,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
     // open notebook page for collaborative notebooks as well
     setCurrentNotebook(notebook)
     setShowNotebookPage(true)
-    if (onActiveNotebookChange) onActiveNotebookChange(notebook.title)
+    if (onActiveNotebookChange) onActiveNotebookChange(notebook)
   }
 
   

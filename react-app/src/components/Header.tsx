@@ -1,13 +1,16 @@
 import api from '../lib/api'
+import { useNavigate } from 'react-router-dom'
 
 interface HeaderProps {
   onNewNotebook: () => void
   siteTitle?: string | null
+  activeNotebookId?: string | null
   onReturn?: () => void
   onAddPage?: () => void
 }
 
-export default function Header({ onNewNotebook, siteTitle, onReturn, onAddPage }: HeaderProps) {
+export default function Header({ onNewNotebook, siteTitle, activeNotebookId, onReturn, onAddPage }: HeaderProps) {
+  const navigate = useNavigate()
   const handleLogout = async () => {
     try {
       await api.post('/auth/token/logout/', undefined, true)
@@ -28,6 +31,9 @@ export default function Header({ onNewNotebook, siteTitle, onReturn, onAddPage }
         ) : null}
         <h1 className="site-title">{siteTitle ? siteTitle : 'My Hivemind'}</h1>
         <div className="logout-in-title">
+          {siteTitle && (
+            <button className="btn primary" onClick={() => { navigate(`/posts/${encodeURIComponent((activeNotebookId || '').toString())}`) }}>Posts</button>
+          )}
           <button className="btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>

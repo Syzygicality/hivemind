@@ -1,0 +1,57 @@
+.readonly-root {
+    padding: 20px;
+}
+
+.readonly-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.readonly-title {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text);
+}
+
+/* position the back button on the left similar to site title bar */
+.readonly-header .btn {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.readonly-document {
+    display: flex;
+    justify-content: center;
+    margin-top: 70px;
+}
+
+.readonly-pre {
+    width: 1000px;
+    max-width: calc(95% - 40px);
+    min-height: 1000px;
+    /* make it tall like a piece of paper */
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    padding: 48px 56px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    white-space: pre-wrap;
+    font-family: ui-serif, Georgia, 'Times New Roman', Times, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+}
+
+.readonly-loading,
+.readonly-error {
+    color: #666;
+    padding: 12px;
+}

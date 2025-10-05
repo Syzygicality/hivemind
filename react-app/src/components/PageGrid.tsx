@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 import './PageGrid.css'
 import PageEditor from './PageEditor'
 
 export default function PageGrid({ notebook, refreshKey }: { notebook: any, refreshKey?: number }) {
+  const navigate = useNavigate()
   const [pages, setPages] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -98,7 +100,7 @@ export default function PageGrid({ notebook, refreshKey }: { notebook: any, refr
               )}
               {/* draft meta moved to top near version */}
               <div className="page-card-actions">
-                <button className="btn primary">History</button>
+                <button className="btn primary" onClick={() => navigate(`/view/${notebook.notebook_id}/${p.page_id}`)}>View</button>
                 <button className="btn primary" onClick={async () => {
                   try {
                     // check for existing drafts for this notebook
