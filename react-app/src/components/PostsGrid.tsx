@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 import './PostsGrid.css'
 
@@ -8,6 +8,7 @@ export default function PostsGrid() {
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     let mounted = true
@@ -57,22 +58,30 @@ export default function PostsGrid() {
   }, [notebookId])
 
   return (
-    <div className="posts-root">
-      <h2 className="posts-title">Posts</h2>
-      {loading && <div className="loading">Loading posts...</div>}
-      {error && <div className="error-message">{error}</div>}
-      <div className="posts-grid">
-        {posts.map((post) => (
-          <div className="post-card" key={post.post_id}>
-            <div className="post-card-title">{post.pageTitle || 'Page'}</div>
-            <div className="post-card-meta">By {post.user_id?.username || 'Unknown'} • {new Date(post.created_at).toLocaleString()}</div>
-            <div className="post-card-content">{post.content?.slice(0, 240)}</div>
-            <div className="post-card-actions">
-              {/* future: view post detail */}
-            </div>
-          </div>
-        ))}
+    <>
+      <div className="site-title-bar">
+        <div className="return-in-title">
+          <button className="btn" onClick={() => navigate(`/notebook/${encodeURIComponent(notebookId || '')}`)}>← Return</button>
+        </div>
+        <h1 className="site-title">Posts</h1>
+        <div className="logout-in-title" />
       </div>
-    </div>
+      <div className="posts-root">
+        {loading && <div className="loading">Loading posts...</div>}
+        {error && <div className="error-message">{error}</div>}
+        <div className="posts-grid">
+          {posts.map((post) => (
+            <div className="post-card" key={post.post_id}>
+              <div className="post-card-title">{post.pageTitle || 'Page'}</div>
+              <div className="post-card-meta">By {post.user_id?.username || 'Unknown'} • {new Date(post.created_at).toLocaleString()}</div>
+              <div className="post-card-content">{post.content?.slice(0, 240)}</div>
+              <div className="post-card-actions">
+                {/* future: view post detail */}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
   )
 }

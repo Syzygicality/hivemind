@@ -65,7 +65,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
       if (nb) {
         setCurrentNotebook(nb)
         setShowNotebookPage(true)
-        if (onActiveNotebookChange) onActiveNotebookChange(nb.title)
+        if (onActiveNotebookChange) onActiveNotebookChange(nb)
       }
     }
   }))

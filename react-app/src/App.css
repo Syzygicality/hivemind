@@ -314,6 +314,8 @@ body,
   /* vertically center using transform so it remains centered regardless of banner padding */
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  gap: 17px;
 }
 
 .logout-in-title .btn {

@@ -1,0 +1,167 @@
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import api from '../lib/api'
+import Header from './Header'
+import PageGrid from './PageGrid'
+
+export default function PageView() {
+  const { notebookId } = useParams()
+  const navigate = useNavigate()
+  const [notebook, setNotebook] = useState<any | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [pageRefreshKey, setPageRefreshKey] = useState(0)
+  const [showNewPageInput, setShowNewPageInput] = useState(false)
+  const [newPageName, setNewPageName] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+
+    async function loadNotebook() {
+      if (!notebookId) {
+        setError('No notebook ID provided')
+        setLoading(false)
+        return
+      }
+
+      try {
+        const res = await api.get(`/api/notebooks/${notebookId}/`, true)
+        if (!mounted) return
+
+        if (res.ok && res.body) {
+          const nb = {
+            notebook_id: res.body.notebook_id,
+            title: res.body.title,
+            admin: res.body.admin_id ? { id: res.body.admin_id.id, username: res.body.admin_id.username } : undefined,
+            user_ids: res.body.user_ids || [],
+            created_at: res.body.created_at,
+            updated_at: res.body.updated_at,
+            pages: res.body.pages || [],
+            isPrivate: !(res.body.user_ids && res.body.user_ids.length > 0),
+            contributors: res.body.user_ids ? res.body.user_ids.map((u: any) => u.username) : []
+          }
+          setNotebook(nb)
+        } else {
+          setError('Failed to load notebook')
+        }
+      } catch (e) {
+        console.error('Error loading notebook:', e)
+        setError('Error loading notebook')
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    loadNotebook()
+    return () => { mounted = false }
+  }, [notebookId])
+
+  const handleReturn = () => {
+    navigate('/')
+  }
+
+  const handleAddPage = async () => {
+    setShowNewPageInput(true)
+  }
+
+  const handleCreatePage = async () => {
+    if (!notebook) return
+    const title = newPageName.trim() || 'New Page'
+    setIsCreating(true)
+    try {
+      const payload = { title }
+      const res = await api.post(`/api/notebooks/${notebook.notebook_id}/pages/`, payload, true)
+      if (res.ok) {
+        setPageRefreshKey(k => k + 1)
+        setNewPageName('')
+        setShowNewPageInput(false)
+      } else {
+        console.error('Failed to create page', res)
+      }
+    } catch (e) {
+      console.error('Error creating page', e)
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  const handleCancelNewPage = () => {
+    setNewPageName('')
+    setShowNewPageInput(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="home-root">
+        <Header onNewNotebook={() => {}} siteTitle="Loading..." activeNotebookId={null} onReturn={handleReturn} onAddPage={() => {}} />
+        <main className="home-main">
+          <div className="panel-wrap">
+            <div className="loading">Loading notebook...</div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (error || !notebook) {
+    return (
+      <div className="home-root">
+        <Header onNewNotebook={() => {}} siteTitle="Error" activeNotebookId={null} onReturn={handleReturn} onAddPage={() => {}} />
+        <main className="home-main">
+          <div className="panel-wrap">
+            <div className="error-message">{error || 'Notebook not found'}</div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  return (
+    <div className="home-root">
+      {showNewPageInput && (
+        <div className="new-notebook-modal">
+          <div className="new-notebook-content">
+            <h3>Create New Page</h3>
+            <input
+              placeholder="Enter page name..."
+              value={newPageName}
+              onChange={(e) => setNewPageName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  handleCreatePage()
+                } else if (e.key === 'Escape') {
+                  handleCancelNewPage()
+                }
+              }}
+              autoFocus
+              className="new-notebook-textarea"
+              disabled={isCreating}
+            />
+            <div className="new-notebook-actions">
+              <button onClick={handleCancelNewPage} className="btn-cancel" disabled={isCreating}>
+                Cancel
+              </button>
+              <button onClick={handleCreatePage} className="btn-create" disabled={isCreating}>
+                {isCreating ? 'Creating...' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <Header 
+        onNewNotebook={() => {}} 
+        siteTitle={notebook.title} 
+        activeNotebookId={notebook.notebook_id} 
+        onReturn={handleReturn} 
+        onAddPage={handleAddPage} 
+      />
+      <main className="home-main">
+        <div className="panel-wrap">
+          <PageGrid notebook={notebook} refreshKey={pageRefreshKey} />
+        </div>
+      </main>
+    </div>
+  )
+}

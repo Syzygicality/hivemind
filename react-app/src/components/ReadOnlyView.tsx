@@ -44,7 +44,7 @@ export default function ReadOnlyView() {
   return (
     <div className="readonly-root">
       <div className="readonly-header">
-        <button className="btn" onClick={() => navigate(`/?open=${encodeURIComponent(notebookId || '')}`)}>Back</button>
+        <button className="btn" onClick={() => navigate(`/notebook/${encodeURIComponent(notebookId || '')}`)}>Back</button>
         <h2 className="readonly-title">{title}</h2>
       </div>
       {loading ? (
