@@ -9,6 +9,11 @@ export default function PostsGrid() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [votingPosts, setVotingPosts] = useState<Set<string>>(new Set())
+  const [notebook, setNotebook] = useState<any>(null)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [showThresholdPopup, setShowThresholdPopup] = useState(false)
+  const [thresholdValue, setThresholdValue] = useState('')
+  const [updatingThreshold, setUpdatingThreshold] = useState(false)
   const navigate = useNavigate()
 
   const handleVote = async (postId: string) => {
@@ -46,6 +51,36 @@ export default function PostsGrid() {
         newSet.delete(postId)
         return newSet
       })
+    }
+  }
+
+  const handleUpdateThreshold = async () => {
+    if (!notebookId || !isAdmin) return
+    
+    const newThreshold = parseInt(thresholdValue)
+    if (isNaN(newThreshold) || newThreshold < 1) {
+      alert('Please enter a valid threshold (minimum 1)')
+      return
+    }
+    
+    setUpdatingThreshold(true)
+    try {
+      const res = await api.patch(`/api/notebooks/${notebookId}/`, {
+        merge_threshold: newThreshold
+      }, true)
+      
+      if (res.ok) {
+        setNotebook((prev: any) => ({ ...prev, merge_threshold: newThreshold }))
+        setShowThresholdPopup(false)
+        setThresholdValue('')
+      } else {
+        alert('Failed to update threshold')
+      }
+    } catch (e) {
+      console.error('Error updating threshold:', e)
+      alert('Error updating threshold')
+    } finally {
+      setUpdatingThreshold(false)
     }
   }
 
@@ -98,7 +133,44 @@ export default function PostsGrid() {
 
   useEffect(() => {
     loadPosts()
+    
+    // Load notebook details for admin check
+    const loadNotebook = async () => {
+      if (!notebookId) return
+      try {
+        const res = await api.get(`/api/notebooks/${notebookId}/`, true)
+        if (res.ok) {
+          setNotebook({
+            ...res.body,
+            admin: res.body.admin_id ? { 
+              id: res.body.admin_id.id, 
+              username: res.body.admin_id.username 
+            } : null
+          })
+        }
+      } catch (e) {
+        console.error('Error loading notebook:', e)
+      }
+    }
+    
+    // Load current user
+    const loadCurrentUser = async () => {
+      try {
+        const res = await api.get('/api/me/', true)
+        if (res.ok) {
+          setCurrentUser(res.body)
+        }
+      } catch (e) {
+        console.error('Error loading current user:', e)
+      }
+    }
+    
+    loadNotebook()
+    loadCurrentUser()
   }, [notebookId])
+  
+  // Check if current user is admin
+  const isAdmin = notebook?.admin && currentUser && notebook.admin.id === currentUser.id
 
   return (
     <>
@@ -107,7 +179,20 @@ export default function PostsGrid() {
           <button className="btn" onClick={() => navigate(`/notebook/${encodeURIComponent(notebookId || '')}`)}>← Return</button>
         </div>
         <h1 className="site-title">Posts</h1>
-        <div className="logout-in-title" />
+        <div className="logout-in-title">
+          {isAdmin && (
+            <button 
+              className="btn primary"
+              onClick={() => {
+                setThresholdValue(notebook.merge_threshold?.toString() || '3')
+                setShowThresholdPopup(true)
+              }}
+              title="Set voting threshold for auto-merging posts"
+            >
+              Set Threshold ({notebook.merge_threshold || 3})
+            </button>
+          )}
+        </div>
       </div>
       <div className="posts-root">
         {loading && <div className="loading">Loading posts...</div>}
@@ -148,6 +233,40 @@ export default function PostsGrid() {
           ))}
         </div>
       </div>
+      
+      {/* Threshold Setting Popup */}
+      {showThresholdPopup && (
+        <div className="popup-overlay" onClick={() => setShowThresholdPopup(false)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Set Voting Threshold</h3>
+            <p>Posts will automatically merge when they reach this many votes:</p>
+            <input
+              type="number"
+              min="1"
+              value={thresholdValue}
+              onChange={(e) => setThresholdValue(e.target.value)}
+              placeholder="Enter threshold"
+              className="threshold-input"
+            />
+            <div className="popup-actions">
+              <button 
+                className="btn" 
+                onClick={() => setShowThresholdPopup(false)}
+                disabled={updatingThreshold}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn primary" 
+                onClick={handleUpdateThreshold}
+                disabled={updatingThreshold}
+              >
+                {updatingThreshold ? 'Updating...' : 'Update Threshold'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

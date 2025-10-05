@@ -1,9 +1,10 @@
-from .views import UserListCreateView, UserDetailView, NotebookListCreateView, NotebookDetailView, PageListCreateView, PageDetailView, VersionListView, VersionSingleView, DraftListCreateView, DraftDetailView, PostListCreateView, PostDetailView, PostVoteView
+from .views import UserListCreateView, UserDetailView, CurrentUserView, NotebookListCreateView, NotebookDetailView, PageListCreateView, PageDetailView, VersionListView, VersionSingleView, DraftListCreateView, DraftDetailView, PostListCreateView, PostDetailView, PostVoteView
 from django.urls import path
 
 urlpatterns = [
     path('users/', UserListCreateView.as_view(), name='user-list-create'),
     path('users/<uuid:id>/', UserDetailView.as_view(), name='user-detail'),
+    path('me/', CurrentUserView.as_view(), name='current-user'),
     path('notebooks/', NotebookListCreateView.as_view(), name='notebook-list-create'),
     path('notebooks/<uuid:notebook_id>/', NotebookDetailView.as_view(), name='notebook-detail'),
     path('notebooks/<uuid:notebook_id>/pages/', PageListCreateView.as_view(), name='page-list-create'),

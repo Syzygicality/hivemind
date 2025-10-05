@@ -20,6 +20,16 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'id'
 
+#I added this --> Ansh Routray
+
+class CurrentUserView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user
+#----
+
 class NotebookListCreateView(generics.ListCreateAPIView):
     serializer_class = NotebookSerializer
     permission_classes = [permissions.IsAuthenticated]
