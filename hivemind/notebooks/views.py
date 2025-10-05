@@ -267,3 +267,50 @@ class PostVoteView(generics.UpdateAPIView):
             return Response({"merged": True, "message": "Post merged into new version."}, status=status.HTTP_200_OK)
 
         return Response({"votes": post.votes}, status=status.HTTP_200_OK)
+
+class VersionCompareView(generics.GenericAPIView):
+    """Compare two versions of a page and return content for diff highlighting."""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        """Get two versions for comparison.
+        Query params:
+        - version1: UUID of first version (older)
+        - version2: UUID of second version (newer) - defaults to latest version if not provided
+        """
+        page_id = kwargs.get('page_id')
+        version1_id = request.query_params.get('version1')
+        version2_id = request.query_params.get('version2')
+        
+        if not page_id:
+            return Response({"detail": "Page id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not version1_id:
+            return Response({"detail": "version1 parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            page = Page.objects.get(page_id=page_id)
+        except Page.DoesNotExist:
+            return Response({"detail": "Page not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            version1 = Version.objects.get(version_id=version1_id, page_id=page)
+        except Version.DoesNotExist:
+            return Response({"detail": "First version not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        if version2_id:
+            try:
+                version2 = Version.objects.get(version_id=version2_id, page_id=page)
+            except Version.DoesNotExist:
+                return Response({"detail": "Second version not found."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Default to latest version
+            version2 = page.latest_version
+            if not version2:
+                return Response({"detail": "Page has no latest version."}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response({
+            "version1": VersionSerializer(version1).data,
+            "version2": VersionSerializer(version2).data,
+            "page_title": page.title
+        }, status=status.HTTP_200_OK)

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../lib/api'
+import VersionHistoryModal from './VersionHistoryModal'
 import './ReadOnlyView.css'
 
 export default function ReadOnlyView() {
@@ -18,6 +19,7 @@ export default function ReadOnlyView() {
   const [isViewingPost, setIsViewingPost] = useState<boolean>(false)
   const [showDiff, setShowDiff] = useState<boolean>(true) // Whether to show diff when viewing post
   const [voting, setVoting] = useState<boolean>(false)
+  const [showVersionHistory, setShowVersionHistory] = useState<boolean>(false)
 
   // Diff highlighting function for comparing post content with current page content
   const renderDiff = (postContent: string, currentContent: string) => {
@@ -199,6 +201,15 @@ export default function ReadOnlyView() {
           {title}
           {isViewingPost && <span style={{ color: '#666', fontSize: '0.8em', marginLeft: '10px' }}>(Viewing Post Changes)</span>}
         </h2>
+        {!isViewingPost && (
+          <button 
+            className="btn btn-history" 
+            onClick={() => setShowVersionHistory(true)}
+            title="View version history"
+          >
+            History
+          </button>
+        )}
       </div>
       
       {isViewingPost && (
@@ -248,6 +259,14 @@ export default function ReadOnlyView() {
           }
         </div>
       )}
+      
+      <VersionHistoryModal
+        isOpen={showVersionHistory}
+        onClose={() => setShowVersionHistory(false)}
+        notebookId={notebookId || ''}
+        pageId={pageId || ''}
+        currentContent={content}
+      />
     </div>
   )
 }

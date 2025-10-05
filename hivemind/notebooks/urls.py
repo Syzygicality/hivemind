@@ -1,4 +1,4 @@
-from .views import UserListCreateView, UserDetailView, CurrentUserView, NotebookListCreateView, NotebookDetailView, PageListCreateView, PageDetailView, VersionListView, VersionSingleView, DraftListCreateView, DraftDetailView, PostListCreateView, PostDetailView, PostVoteView
+from .views import UserListCreateView, UserDetailView, CurrentUserView, NotebookListCreateView, NotebookDetailView, PageListCreateView, PageDetailView, VersionListView, VersionSingleView, DraftListCreateView, DraftDetailView, PostListCreateView, PostDetailView, PostVoteView, VersionCompareView
 from django.urls import path
 
 urlpatterns = [
@@ -10,6 +10,7 @@ urlpatterns = [
     path('notebooks/<uuid:notebook_id>/pages/', PageListCreateView.as_view(), name='page-list-create'),
     path('notebooks/<uuid:notebook_id>/pages/<uuid:page_id>/', PageDetailView.as_view(), name='page-detail'),
     path('notebooks/<uuid:notebook_id>/pages/<uuid:page_id>/versions/', VersionListView.as_view(), name='version-list'),
+    path('notebooks/<uuid:notebook_id>/pages/<uuid:page_id>/versions/compare/', VersionCompareView.as_view(), name='version-compare'),
     path('notebooks/<uuid:notebook_id>/pages/<uuid:page_id>/versions/<uuid:version_id>/', VersionSingleView.as_view(), name='version-single'),
     path('notebooks/<uuid:notebook_id>/drafts/', DraftListCreateView.as_view(), name='draft-list-create'),
     path('notebooks/<uuid:notebook_id>/drafts/<uuid:draft_id>', DraftDetailView.as_view(), name='draft-detail'),

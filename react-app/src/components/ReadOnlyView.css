@@ -27,6 +27,23 @@
     transform: translateY(-50%);
 }
 
+/* position the history button on the right */
+.readonly-header .btn-history {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    left: auto;
+    background-color: #007bff;
+    color: white;
+    border: 1px solid #007bff;
+}
+
+.readonly-header .btn-history:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
 .readonly-document {
     display: flex;
     justify-content: center;
