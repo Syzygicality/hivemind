@@ -1,0 +1,63 @@
+.page-editor-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1200;
+}
+
+.page-editor-content {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 960px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.page-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.page-editor-textarea {
+    width: 100%;
+    min-height: 360px;
+    box-sizing: border-box;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-family: monospace;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.page-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+}
+
+.btn-create {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+}
