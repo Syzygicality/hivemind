@@ -64,10 +64,11 @@ class NotebookDetailView(generics.RetrieveUpdateDestroyAPIView):
 class PageListCreateView(generics.ListCreateAPIView):
     queryset = Page.objects.all()
     serializer_class = PageSerializer
+    permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'page_id'
 
-    def get_queryset(self, request, *args, **kwargs):
-        notebook_id = kwargs.get('notebook_id')
+    def get_queryset(self):
+        notebook_id = self.kwargs.get('notebook_id')
         return Page.objects.filter(notebook_id=notebook_id).order_by('-created_at')
     
     def perform_create(self, serializer):
