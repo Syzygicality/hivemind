@@ -45,36 +45,68 @@ export default function ReadOnlyView() {
       )
     }
 
-    // Simple word-based diff highlighting
-    const postWords = postContent.split(/(\s+)/)
-    const currentWords = currentContent.split(/(\s+)/)
+    // Enhanced sentence-based diff highlighting
+    // Split content into sentences (using periods, exclamation marks, question marks)
+    const splitIntoSentences = (text: string) => {
+      return text.split(/([.!?]+\s*)/).filter(s => s.length > 0)
+    }
+    
+    const postSentences = splitIntoSentences(postContent)
+    const currentSentences = splitIntoSentences(currentContent)
     
     const result: React.ReactElement[] = []
     
-    postWords.forEach((word, index) => {
-      if (word.trim().length === 0) {
-        // Preserve whitespace
-        result.push(<span key={index}>{word}</span>)
-      } else if (!currentWords.includes(word)) {
-        // Word is not in current version - highlight as new/changed
-        result.push(
-          <span 
-            key={index} 
-            style={{ 
-              backgroundColor: '#d1ecf1', 
-              border: '1px solid #bee5eb',
-              padding: '1px 3px',
-              borderRadius: '2px',
-              fontWeight: 'bold'
-            }}
-            title="This text is different from the current page version"
-          >
-            {word}
-          </span>
-        )
+    // Create a merged view showing both additions and deletions inline
+    const allSentences = [...new Set([...currentSentences, ...postSentences])]
+    
+    allSentences.forEach((sentence, index) => {
+      if (sentence.trim().length === 0 || /^[.!?]+\s*$/.test(sentence)) {
+        // Preserve punctuation and whitespace
+        result.push(<span key={`merged-${index}`}>{sentence}</span>)
       } else {
-        // Word exists in current version - show normally
-        result.push(<span key={index}>{word}</span>)
+        const inPost = postSentences.some(ps => ps.trim() === sentence.trim())
+        const inCurrent = currentSentences.some(cs => cs.trim() === sentence.trim())
+        
+        if (inPost && inCurrent) {
+          // Sentence exists in both - show normally
+          result.push(<span key={`merged-${index}`}>{sentence}</span>)
+        } else if (inPost && !inCurrent) {
+          // Sentence added in post - highlight in blue/teal
+          result.push(
+            <span 
+              key={`merged-${index}`} 
+              style={{ 
+                backgroundColor: '#d1ecf1', 
+                border: '1px solid #bee5eb',
+                padding: '1px 3px',
+                borderRadius: '2px',
+                fontWeight: 'bold'
+              }}
+              title="This text was added in this post"
+            >
+              {sentence}
+            </span>
+          )
+        } else if (!inPost && inCurrent) {
+          // Sentence removed in post - highlight in red
+          result.push(
+            <span 
+              key={`merged-${index}`}
+              style={{ 
+                backgroundColor: '#f8d7da', 
+                border: '1px solid #f5c6cb',
+                padding: '1px 3px',
+                borderRadius: '2px',
+                fontWeight: 'bold',
+                color: '#721c24',
+                textDecoration: 'line-through'
+              }}
+              title="This text was removed in this post"
+            >
+              {sentence}
+            </span>
+          )
+        }
       }
     })
 

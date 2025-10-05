@@ -95,9 +95,6 @@ export default function PageGrid({ notebook, refreshKey }: { notebook: any, refr
                   </div>
                 </div>
               )}
-              {p.latest_version?.content && (
-                <div className="page-card-snippet">{p.latest_version.content.slice(0, 160)}</div>
-              )}
               {/* draft meta moved to top near version */}
               <div className="page-card-actions">
                 <button className="btn primary" onClick={() => navigate(`/view/${notebook.notebook_id}/${p.page_id}`)}>View</button>

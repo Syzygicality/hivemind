@@ -207,9 +207,6 @@ export default function PostsGrid() {
             <div className="post-card" key={post.post_id}>
               <div className="post-card-title">{post.pageTitle || 'Page'}</div>
               <div className="post-card-meta">By {post.user_id?.username || 'Unknown'} • {new Date(post.created_at).toLocaleString()}</div>
-              <div className="post-card-content">
-                {post.content?.slice(0, 240) || ''}
-              </div>
               <div className="post-card-actions">
                 <div className="vote-section">
                   <button 
