@@ -180,7 +180,7 @@ class PostListCreateView(generics.ListCreateAPIView):
         return (
             Post.objects
             .filter(page_id=page_id)
-            .order_by('-vote_count')
+            .order_by('-votes')
         )
     
     def perform_create(self, serializer):
