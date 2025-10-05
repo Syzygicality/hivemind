@@ -71,7 +71,7 @@ export default function Header({ onNewNotebook, siteTitle, activeNotebookId, onR
         <div className="header-actions">
           {siteTitle ? (
             <>
-              <button className="btn primary" onClick={() => { if (onAddPage) onAddPage() }}>Add Page</button>
+              <button style={{ display: isAdmin ? 'none' : 'block' }} className="btn primary" onClick={() => { if (onAddPage) onAddPage() }}>Add Page</button>
               {isAdmin && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
                   {!showThresholdInput ? (

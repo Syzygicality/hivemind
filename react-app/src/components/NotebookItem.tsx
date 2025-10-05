@@ -72,7 +72,6 @@ export default function NotebookItem({ notebook, currentUser, onDelete }: Notebo
         <div className="nb-title">{notebook.title}</div>
         <div className="nb-meta">
           <span className="nb-admin">{notebook.admin?.username || 'Unknown'}</span>
-          <span className="nb-pages">{notebook.pages?.length || 0} page(s)</span>
         </div>
         {/* contributors list (if any) */}
         {notebook.contributors && notebook.contributors.length > 0 && (
