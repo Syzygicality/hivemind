@@ -1,8 +1,9 @@
-from rest_framework import generics, serializers, filters
+from rest_framework import generics, filters, status, permissions
 from .models import User, Notebook, Page, Version, Draft, Post, Vote
 from .serializers import UserSerializer, NotebookSerializer, PageSerializer, VersionSerializer, DraftSerializer, PostSerializer
-from rest_framework import permissions
-from django.db import transaction
+from rest_framework.response import Response
+from django.db import transaction, models
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 class UserListCreateView(generics.ListCreateAPIView):
@@ -143,12 +144,7 @@ class PostListCreateView(generics.ListCreateAPIView):
         )
     
     def perform_create(self, serializer):
-        draft_id = self.request.data.get('draft_id')
-
-        draft = self.get_queryset().filter(draft_id=draft_id).first()
-        if not draft:
-            raise serializers.ValidationError("Draft not found or not owned by you.")
-
+        draft = get_object_or_404(Draft, id=self.request.data.get('draft_id'), user_id=self.request.user)
         serializer.save(
             user_id=self.request.user,
             page_id=draft.page_id,
@@ -177,7 +173,7 @@ class PostVoteView(generics.UpdateAPIView):
     def get_queryset(self):
         return Post.objects.all()
     
-    @transaction.atomic
+    @transaction.atomic()
     def update(self, request, *args, **kwargs):
         user = request.user
         post = self.get_object() 
@@ -185,10 +181,10 @@ class PostVoteView(generics.UpdateAPIView):
         existing_vote = Vote.objects.filter(post_id=post, user_id=user).first()
 
         if existing_vote:
-            post.votes = F('votes') - 1
+            post.votes = models.F('votes') - 1
             existing_vote.delete()
         else:
-            post.votes = F('votes') + 1
+            post.votes = models.F('votes') + 1
             Vote.objects.create(post_id=post, user_id=user)
 
         post.save()
