@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../lib/api'
 import './PageGrid.css'
 
-export default function PageGrid({ notebook }: { notebook: any }) {
+export default function PageGrid({ notebook, refreshKey }: { notebook: any, refreshKey?: number }) {
   const [pages, setPages] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +28,7 @@ export default function PageGrid({ notebook }: { notebook: any }) {
     }
     loadPages()
     return () => { mounted = false }
-  }, [notebook])
+  }, [notebook, refreshKey])
 
   return (
     <div className="page-grid-root">

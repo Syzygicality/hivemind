@@ -8,7 +8,7 @@ type NotebookListProps = {
   onActiveNotebookChange?: (title: string | null) => void
 }
 
-const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageView?: () => void }, NotebookListProps>((props, ref) => {
+const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageView?: () => void, addPage?: () => Promise<void> }, NotebookListProps>((props, ref) => {
   const { onActiveNotebookChange } = props
   const [notebooks, setNotebooks] = useState<any[]>([])
   const [showNewNotebookInput, setShowNewNotebookInput] = useState(false)
@@ -19,6 +19,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
   const [selectedContributors, setSelectedContributors] = useState<string[]>([])
   const [showNotebookPage, setShowNotebookPage] = useState(false)
   const [currentNotebook, setCurrentNotebook] = useState<any>(null)
+  const [pageRefreshKey, setPageRefreshKey] = useState(0)
   // notebook editor content removed in favor of PageGrid
   const [allUsers, setAllUsers] = useState<any[]>([])
   const [currentUser, setCurrentUser] = useState<any>(null)
@@ -35,8 +36,11 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
         const payload = { title: 'New Page' }
         const res = await api.post(`/api/notebooks/${currentNotebook.notebook_id}/pages/`, payload, true)
         if (res.ok) {
-          // refresh pages by re-opening the notebook
-          setCurrentNotebook((prev: any) => ({ ...prev }))
+          // bump a refresh key so PageGrid will re-fetch pages
+          setPageRefreshKey((k) => k + 1)
+          // also update the notebook object reference so any consumers that
+          // depend on its identity see a change
+          setCurrentNotebook((prev: any) => (prev ? { ...prev } : prev))
         } else {
           console.error('Failed to add page', res)
         }
@@ -254,7 +258,7 @@ const NotebookList = forwardRef<{ showNewNotebookInput: () => void, closePageVie
   }
 
   if (showNotebookPage && currentNotebook) {
-    return <PageGrid notebook={currentNotebook} />
+    return <PageGrid notebook={currentNotebook} refreshKey={pageRefreshKey} />
   }
 
   return (
